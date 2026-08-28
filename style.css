@@ -1,0 +1,172 @@
+:root {
+    --bg-color: #f4f6f8;
+    --card-bg: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --accent-color: #2563eb;
+    --accent-hover: #1d4ed8;
+    
+    --present-bg: #e6f4ea;
+    --present-text: #137333;
+    --absent-bg: #fce8e6;
+    --absent-text: #c5221f;
+    
+    --border-radius: 16px;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    
+    --present-bg: rgba(19, 115, 51, 0.25);
+    --present-text: #4ade80;
+    --absent-bg: rgba(197, 34, 31, 0.25);
+    --absent-text: #f87171;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.header {
+    background: var(--card-bg);
+    padding: 18px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+input[type="date"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--text-secondary);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.btn-main {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-main:active {
+    background: var(--accent-hover);
+    transform: scale(0.98);
+}
+
+.student-card {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+}
+
+.student-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.student-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.absent-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--bg-color);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.lesson-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lesson-title {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.btn-status {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-status:active {
+    transform: scale(0.95);
+}
+
+.btn-present {
+    background-color: var(--present-bg);
+    color: var(--present-text);
+}
+
+.btn-absent {
+    background-color: var(--absent-bg);
+    color: var(--absent-text);
+}
