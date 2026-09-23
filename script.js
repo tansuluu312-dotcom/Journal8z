@@ -1,10 +1,14 @@
-// Настройки Firebase базы данных
+// Настройки Firebase
 var firebaseConfig = {
     databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
+
+// Проверка режима "Только просмотр" (для родителей)
+const urlParams = new URLSearchParams(window.location.search);
+const isViewOnly = urlParams.get('mode') === 'view';
 
 // Полный список класса 8-З
 var students = [
@@ -57,7 +61,7 @@ function getDateKey() {
     return datePicker.value;
 }
 
-// Слушаем Firebase базу данных
+// Загрузка данных из Firebase
 function listenToDatabase() {
     var dateKey = getDateKey();
     database.ref('attendance/' + dateKey).on('value', function(snapshot) {
@@ -75,6 +79,7 @@ function listenToDatabase() {
 }
 
 function saveData() {
+    if (isViewOnly) return;
     var dateKey = getDateKey();
     database.ref('attendance/' + dateKey).set(currentData);
 }
@@ -82,6 +87,14 @@ function saveData() {
 function render() {
     var query = searchInput ? searchInput.value.toLowerCase() : '';
     studentsList.innerHTML = '';
+
+    // Если режим просмотра, скрываем служебные кнопки
+    if (isViewOnly) {
+        var btnAll = document.querySelector('.btn-main');
+        if (btnAll && btnAll.textContent.includes('Все есть')) {
+            btnAll.style.display = 'none';
+        }
+    }
 
     for (var i = 0; i < students.length; i++) {
         var name = students[i];
@@ -131,7 +144,13 @@ function render() {
     }
 }
 
+// Изменение статуса (с защитой от родительского режима)
 function toggleStatus(studentIndex, lessonIndex) {
+    if (isViewOnly) {
+        alert("Это режим просмотра для родителей. Изменять данные может только староста!");
+        return;
+    }
+
     var name = students[studentIndex];
     if (!currentData[name]) currentData[name] = ['Б', 'Б', 'Б', 'Б', 'Б', 'Б', 'Б'];
     
@@ -148,6 +167,7 @@ function toggleStatus(studentIndex, lessonIndex) {
 }
 
 function markAllPresent() {
+    if (isViewOnly) return;
     for (var i = 0; i < students.length; i++) {
         currentData[students[i]] = ['Б', 'Б', 'Б', 'Б', 'Б', 'Б', 'Б'];
     }
