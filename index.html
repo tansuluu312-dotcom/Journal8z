@@ -2,62 +2,62 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Э-Күндөлүк (Класс 8-З)</title>
-    <link rel="stylesheet" href="style.css?v=4">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Учёт посещаемости 8З</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-    <div class="header">
-        <div class="top-bar">
-            <div class="title-container">
-                <div class="badge-8z">8З</div>
-                <div class="title-text">
-                    <h1>Э-Күндөлүк</h1>
-                    <p>Учет посещаемости</p>
+    <div class="app-container">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="header-left">
+                <span class="badge">8З</span>
+                <div class="date-box">
+                    <label for="datePicker">Дата:</label>
+                    <input type="date" id="datePicker">
                 </div>
             </div>
-            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Сменить тему">🌙</button>
+        </header>
+
+        <!-- Кнопки действий -->
+        <div class="actions-bar">
+            <button class="btn-action btn-all" onclick="markAllPresent()">✨ Все есть</button>
+            <button class="btn-action btn-wa" onclick="copyWhatsAppReport()">📊 WhatsApp</button>
+            <button class="btn-action btn-stats" onclick="openStats()">📈 Статистика</button>
         </div>
 
-        <div class="date-row">
-            <input type="date" id="datePicker">
-            <button class="btn-all-present" id="btnAllPresent" onclick="markAllPresent()">✨ Все есть</button>
-        </div>
-
+        <!-- Поиск -->
         <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Поиск ученика..." oninput="render()">
+            <input type="text" id="searchInput" placeholder="🔍 Найти ученика..." oninput="render()">
         </div>
 
-        <div class="chips-row">
+        <!-- Фильтры -->
+        <div class="filter-chips">
             <button class="chip active" onclick="setFilter('all', this)">Все</button>
-            <button class="chip" onclick="setFilter('absent', this)">🔥 Только Н/Б</button>
-            <button class="chip" onclick="setFilter('reason', this)">📑 Больничный (П)</button>
-            <button class="chip" onclick="setFilter('late', this)">⏰ Опоздал (О)</button>
+            <button class="chip" onclick="setFilter('absent', this)">Отсутствуют (Н/Б)</button>
+            <button class="chip" onclick="setFilter('reason', this)">Уважительная (П)</button>
+            <button class="chip" onclick="setFilter('late', this)">Опоздали (О)</button>
         </div>
 
-        <div class="actions-row">
-            <button class="btn-action btn-whatsapp" onclick="copyWhatsAppReport()">📊 WhatsApp</button>
-            <button class="btn-action btn-stats" onclick="openStats()">📊 Статистика</button>
-        </div>
+        <!-- Список карточек -->
+        <div id="studentsList" class="students-list"></div>
     </div>
 
-    <div id="studentsList"></div>
-
-    <!-- Модальное окно для статистики -->
-    <div class="modal" id="statsModal">
+    <!-- Модальное окно статистики -->
+    <div id="statsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📊 Статистика за месяц</h3>
-                <button onclick="closeStats()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-primary);">&times;</button>
+                <h3>📊 Статистика пропусков</h3>
+                <button class="close-btn" onclick="closeStats()">✕</button>
             </div>
-            <div id="statsBody"></div>
+            <div id="statsBody" class="modal-body"></div>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="script.js?v=4"></script>
+    <script src="script.js"></script>
 </body>
 </html>
