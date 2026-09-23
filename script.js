@@ -1,12 +1,4 @@
-// Конфигурация базы Firebase
-const firebaseConfig = {
-    databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// Обновленный список 8З класса
+// Обновленный список учеников 8-З класса (35 человек)
 const students = [
     "Абдраманов Нурислам",
     "Акунжанова Арина",
@@ -48,99 +40,66 @@ const students = [
 const totalLessons = 7;
 const datePicker = document.getElementById('datePicker');
 const studentsList = document.getElementById('studentsList');
-const searchInput = document.getElementById('searchInput');
 
-// Проверка режима "Только чтение" по ссылке (?view=readonly)
-const urlParams = new URLSearchParams(window.location.search);
-const isReadOnly = urlParams.get('view') === 'readonly';
-
-let activeFilter = 'all'; 
-let currentDayData = {};
-
-datePicker.valueAsDate = new Date();
-
-if (isReadOnly) {
-    document.querySelectorAll('.editor-only').forEach(el => el.style.display = 'none');
-    document.getElementById('readonlyBadge').style.display = 'block';
+// Установка сегодняшней даты по умолчанию
+if (datePicker) {
+    datePicker.valueAsDate = new Date();
 }
 
-function initSync() {
-    db.ref('attendance/' + datePicker.value).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            currentDayData = data;
-        } else {
-            currentDayData = {};
-            students.forEach(name => {
-                currentDayData[name] = Array(totalLessons).fill('Б');
-            });
-        }
-        render();
-    });
+// Ключ для хранения в localStorage
+function getStorageKey() {
+    return `attendance_${datePicker.value}`;
 }
 
-function saveData() {
-    if (isReadOnly) return;
-    db.ref('attendance/' + datePicker.value).set(currentDayData);
-}
-
-function setQuickFilter(type) {
-    activeFilter = type;
-    const buttons = document.querySelectorAll('.tag-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
+// Загрузка состояния (если нет — все присутствуют "Б")
+function loadData() {
+    const saved = localStorage.getItem(getStorageKey());
+    if (saved) return JSON.parse(saved);
     
-    if (type === 'all') buttons[0].classList.add('active');
-    if (type === 'Н/Б') buttons[1].classList.add('active');
-    if (type === 'П') buttons[2].classList.add('active');
-
-    render();
+    const initialData = {};
+    students.forEach(name => {
+        initialData[name] = Array(totalLessons).fill('Б');
+    });
+    return initialData;
 }
 
+// Сохранение текущего состояния
+function saveData(data) {
+    localStorage.setItem(getStorageKey(), JSON.stringify(data));
+}
+
+// Отрисовка списка
 function render() {
+    if (!studentsList) return;
+    const data = loadData();
     studentsList.innerHTML = '';
-    const searchQuery = searchInput.value.toLowerCase().trim();
 
-    students.forEach((name) => {
-        const studentData = currentDayData[name] || Array(totalLessons).fill('Б');
-        
-        let absentCount = 0;
-        let reasonCount = 0;
-
-        studentData.forEach(st => {
-            if (st === 'Н/Б') absentCount++;
-            if (st === 'П') reasonCount++;
-        });
-
-        if (activeFilter === 'Н/Б' && absentCount === 0) return;
-        if (activeFilter === 'П' && reasonCount === 0) return;
-        if (searchQuery && !name.toLowerCase().includes(searchQuery)) return;
-
+    students.forEach((name, studentIndex) => {
         const card = document.createElement('div');
         card.className = 'student-card';
 
+        let absentCount = 0;
         let lessonsHTML = '';
-        studentData.forEach((status, lessonIndex) => {
-            let btnClass = 'btn-present';
-            if (status === 'Н/Б') btnClass = 'btn-absent';
-            if (status === 'П') btnClass = 'btn-reason';
 
+        (data[name] || Array(totalLessons).fill('Б')).forEach((status, lessonIndex) => {
+            const isAbsent = status === 'Н/Б';
+            if (isAbsent) absentCount++;
+            
+            const btnClass = isAbsent ? 'btn-absent' : 'btn-present';
             lessonsHTML += `
                 <div class="lesson-box">
                     <span class="lesson-title">${lessonIndex + 1} ур</span>
-                    <button class="btn-status ${btnClass}" ${isReadOnly ? 'disabled' : ''} onclick="toggleStatus('${name}', ${lessonIndex})">
+                    <button class="btn-status ${btnClass}" onclick="toggleStatus(${studentIndex}, ${lessonIndex})">
                         ${status}
                     </button>
                 </div>
             `;
         });
 
-        let countText = `Н/Б: ${absentCount}`;
-        if (reasonCount > 0) countText += ` | П: ${reasonCount}`;
-
         card.innerHTML = `
             <div class="student-info">
                 <span class="student-name">${name}</span>
-                <span class="absent-badge">${countText}</span>
+                <span class="absent-count">Пропусков: ${absentCount}</span>
             </div>
             <div class="lessons-grid">${lessonsHTML}</div>
         `;
@@ -148,76 +107,55 @@ function render() {
     });
 }
 
-function toggleStatus(name, lessonIndex) {
-    if (isReadOnly) return;
-    if (!currentDayData[name]) currentDayData[name] = Array(totalLessons).fill('Б');
-    
-    const current = currentDayData[name][lessonIndex];
-    if (current === 'Б') currentDayData[name][lessonIndex] = 'Н/Б';
-    else if (current === 'Н/Б') currentDayData[name][lessonIndex] = 'П';
-    else currentDayData[name][lessonIndex] = 'Б';
-
-    saveData();
+// Переключение статуса "Б" <-> "Н/Б"
+function toggleStatus(studentIndex, lessonIndex) {
+    const name = students[studentIndex];
+    const data = loadData();
+    if (!data[name]) data[name] = Array(totalLessons).fill('Б');
+    data[name][lessonIndex] = data[name][lessonIndex] === 'Б' ? 'Н/Б' : 'Б';
+    saveData(data);
+    render();
 }
 
+// Кнопка "Все присутствуют"
 function markAllPresent() {
-    if (isReadOnly) return;
+    const data = {};
     students.forEach(name => {
-        currentDayData[name] = Array(totalLessons).fill('Б');
+        data[name] = Array(totalLessons).fill('Б');
     });
-    saveData();
+    saveData(data);
+    render();
 }
 
-function copyWhatsAppReport() {
-    const formattedDate = datePicker.value.split('-').reverse().join('.');
-    let report = `📋 *Отсутствующие на ${formattedDate} (8З класс):*\n\n`;
-    let hasAbsent = false;
-
-    students.forEach((name, idx) => {
-        const studentData = currentDayData[name] || Array(totalLessons).fill('Б');
-        const abs = [];
-        studentData.forEach((st, i) => {
-            if (st !== 'Б') abs.push(`${i + 1}ур(${st})`);
-        });
-
-        if (abs.length > 0) {
-            hasAbsent = true;
-            report += `${idx + 1}. ${name} — ${abs.join(', ')}\n`;
-        }
-    });
-
-    if (!hasAbsent) report += "Все ученики присутствуют! 🎉";
-
-    navigator.clipboard.writeText(report).then(() => {
-        alert("Отчет скопирован в буфер обмена!");
-    });
-}
-
+// Экспорт посещаемости в CSV/Excel (без пустых строк)
 function exportToExcel() {
-    const rows = [["Ученик", "1 урок", "2 урок", "3 урок", "4 урок", "5 урок", "6 урок", "7 урок"]];
+    const data = loadData();
+    const currentDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+    
+    let csvContent = "ФИО Ученика,1 урок,2 урок,3 урок,4 урок,5 урок,6 урок,7 урок,Всего пропусков\n";
 
     students.forEach(name => {
-        const studentData = currentDayData[name] || Array(totalLessons).fill('Б');
-        rows.push([name, ...studentData]);
+        const studentLessons = data[name] || Array(totalLessons).fill('Б');
+        const absentCount = studentLessons.filter(s => s === 'Н/Б').length;
+        const row = `"${name}",` + studentLessons.join(',') + `,${absentCount}`;
+        csvContent += row + "\n";
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Посещаемость");
-    XLSX.writeFile(wb, `Посещаемость_8З_${datePicker.value}.xlsx`);
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Посещаемость_8З_${currentDate}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
-function toggleTheme() {
-    const body = document.body;
-    const btn = document.getElementById('themeBtn');
-    if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
-        btn.textContent = '🌙';
-    } else {
-        body.setAttribute('data-theme', 'dark');
-        btn.textContent = '☀️';
-    }
+// Перерисовка при изменении даты
+if (datePicker) {
+    datePicker.addEventListener('change', render);
 }
 
-datePicker.addEventListener('change', initSync);
-initSync();
+// Инициализация при загрузке
+render();
