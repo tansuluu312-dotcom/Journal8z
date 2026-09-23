@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Э-Күндөлүк (8-З)</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <title>Э-Күндөлүк (Класс)</title>
+    <link rel="stylesheet" href="style.css?v=99">
 </head>
 <body>
 
     <div class="header">
         <div class="top-bar">
-            <h1>Э-Күндөлүк (8-З)</h1>
+            <h1>Э-Күндөлүк</h1>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
         
-        <!-- Сетка кнопок: Календарь на всю ширину, кнопки аккуратно 2х2 -->
         <div class="controls-grid">
             <input type="date" id="datePicker">
             <button class="btn-main" onclick="markAllPresent()">Все есть</button>
@@ -29,11 +28,10 @@
 
     <div id="studentsList"></div>
 
-    <!-- Модальное окно статистики -->
     <div class="modal" id="statsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📊 Аналитика за месяц</h2>
+                <h2>📊 Статистика</h2>
                 <button class="modal-close" onclick="closeStats()">&times;</button>
             </div>
             <div id="statsBody"></div>
