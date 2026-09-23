@@ -1,20 +1,33 @@
-// Конфигурация и подключение Firebase
 const firebaseConfig = {
-    databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+let db = null;
+try {
+    if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    }
+} catch (e) {
+    console.warn("Офлайн режим: работаем через localStorage");
 }
-const db = firebase.database();
 
-// Список учеников 8З класса
+// Проверка: открыт ли сайт в режиме просмотра для родителей (?mode=view)
+const urlParams = new URLSearchParams(window.location.search);
+const isParentView = urlParams.get('mode') === 'view';
+
+// Полный список класса (35 человек)
 const students = [
     "Абдраманов Нурислам",
     "Акунжанова Арина",
     "Акунов Азирет Али",
     "Ахмедова Элиф",
-    "Осмонов Адахан",
     "Байдаалыев Али",
     "Востров Константин",
     "Джаныбеков Баяман",
@@ -34,6 +47,7 @@ const students = [
     "Момуева Айдинай",
     "Мустафаев Амир",
     "Осмонова Афелия",
+    "Осмонов Адахан",
     "Петров Руслан",
     "Рафатов Нурислам",
     "Рафатов Ясин",
@@ -52,106 +66,101 @@ const datePicker = document.getElementById('datePicker');
 const studentsList = document.getElementById('studentsList');
 const searchInput = document.getElementById('searchInput');
 
-// Проверка режима "Только чтение" для родителей
-const urlParams = new URLSearchParams(window.location.search);
-const isReadOnly = urlParams.get('view') === 'readonly';
-
-let activeFilter = 'all'; 
+let currentFilter = 'all';
 let currentDayData = {};
 
 if (datePicker && !datePicker.value) {
-    datePicker.valueAsDate = new Date();
+    datePicker.value = new Date().toISOString().split('T')[0];
 }
 
-if (isReadOnly) {
-    const editorBtns = document.querySelectorAll('.editor-only');
-    editorBtns.forEach(el => el.style.display = 'none');
-    const badge = document.getElementById('readonlyBadge');
-    if (badge) badge.style.display = 'block';
+function getKey() {
+    return datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
 }
 
-// Загрузка и синхронизация с Firebase
-function initSync() {
-    if (!datePicker) return;
-    db.ref('attendance/' + datePicker.value).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            currentDayData = data;
-        } else {
-            currentDayData = {};
-            students.forEach(name => {
-                currentDayData[name] = Array(totalLessons).fill('Б');
-            });
-        }
-        render();
+function loadFromLocal() {
+    const raw = localStorage.getItem(`attendance_${getKey()}`);
+    if (raw) {
+        try {
+            currentDayData = JSON.parse(raw);
+            return;
+        } catch (e) {}
+    }
+    currentDayData = {};
+    students.forEach(name => {
+        currentDayData[name] = Array(totalLessons).fill('Б');
     });
 }
 
-// Сохранение изменений в Firebase
-function saveData() {
-    if (isReadOnly || !datePicker) return;
-    db.ref('attendance/' + datePicker.value).set(currentDayData);
+function saveToLocal() {
+    if (isParentView) return;
+    localStorage.setItem(`attendance_${getKey()}`, JSON.stringify(currentDayData));
 }
 
-function setQuickFilter(type) {
-    activeFilter = type;
-    const buttons = document.querySelectorAll('.tag-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
+function syncWithFirebase() {
+    if (!db) return;
+    const key = getKey();
     
-    if (type === 'all' && buttons[0]) buttons[0].classList.add('active');
-    if (type === 'Н/Б' && buttons[1]) buttons[1].classList.add('active');
-    if (type === 'П' && buttons[2]) buttons[2].classList.add('active');
-
-    render();
+    db.ref(`attendance/${key}`).once('value').then(snapshot => {
+        const val = snapshot.val();
+        if (val) {
+            students.forEach(name => {
+                if (val[name] && Array.isArray(val[name])) {
+                    currentDayData[name] = val[name];
+                }
+            });
+            saveToLocal();
+            render();
+        } else if (!isParentView) {
+            db.ref(`attendance/${key}`).set(currentDayData);
+        }
+    }).catch(() => {});
 }
 
-// Отрисовка списка учеников
 function render() {
     if (!studentsList) return;
     studentsList.innerHTML = '';
-    const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    students.forEach((name) => {
-        const studentData = currentDayData[name] || Array(totalLessons).fill('Б');
-        
-        let absentCount = 0;
-        let reasonCount = 0;
+    if (isParentView) {
+        const adminControls = document.querySelectorAll('.admin-only');
+        adminControls.forEach(el => el.style.display = 'none');
+    }
 
-        studentData.forEach(st => {
-            if (st === 'Н/Б') absentCount++;
-            if (st === 'П') reasonCount++;
-        });
+    students.forEach((name, studentIndex) => {
+        if (query && !name.toLowerCase().includes(query)) return;
 
-        if (activeFilter === 'Н/Б' && absentCount === 0) return;
-        if (activeFilter === 'П' && reasonCount === 0) return;
-        if (searchQuery && !name.toLowerCase().includes(searchQuery)) return;
+        const userLessons = currentDayData[name] || Array(totalLessons).fill('Б');
+        const absentCount = userLessons.filter(s => s !== 'Б').length;
+
+        if (currentFilter === 'absent' && !userLessons.includes('Н/Б')) return;
+        if (currentFilter === 'reason' && !userLessons.includes('П')) return;
+        if (currentFilter === 'late' && !userLessons.includes('О')) return;
 
         const card = document.createElement('div');
         card.className = 'student-card';
 
         let lessonsHTML = '';
-        studentData.forEach((status, lessonIndex) => {
-            let btnClass = 'btn-present';
-            if (status === 'Н/Б') btnClass = 'btn-absent';
-            if (status === 'П') btnClass = 'btn-reason';
+        userLessons.forEach((status, lessonIndex) => {
+            let cls = 'btn-present';
+            if (status === 'Н/Б') cls = 'btn-absent';
+            if (status === 'П') cls = 'btn-reason';
+            if (status === 'О') cls = 'btn-late';
 
+            const disabledAttr = isParentView ? 'disabled style="cursor: default;"' : '';
+
+            // Безопасный вызов функции по числовому индексу
             lessonsHTML += `
                 <div class="lesson-box">
                     <span class="lesson-title">${lessonIndex + 1} ур</span>
-                    <button class="btn-status ${btnClass}" ${isReadOnly ? 'disabled' : ''} onclick="toggleStatus('${name}', ${lessonIndex})">
-                        ${status}
-                    </button>
+                    <button class="btn-status ${cls}" ${disabledAttr} onclick="toggleStatus(${studentIndex}, ${lessonIndex})">${status}</button>
                 </div>
             `;
         });
 
-        let countText = `Н/Б: ${absentCount}`;
-        if (reasonCount > 0) countText += ` | П: ${reasonCount}`;
-
         card.innerHTML = `
             <div class="student-info">
                 <span class="student-name">${name}</span>
-                <span class="absent-badge">${countText}</span>
+                <span class="absent-count">Отметок: ${absentCount}</span>
             </div>
             <div class="lessons-grid">${lessonsHTML}</div>
         `;
@@ -159,85 +168,88 @@ function render() {
     });
 }
 
-// Переключение статуса урока
-function toggleStatus(name, lessonIndex) {
-    if (isReadOnly) return;
-    if (!currentDayData[name]) currentDayData[name] = Array(totalLessons).fill('Б');
-    
-    const current = currentDayData[name][lessonIndex];
-    if (current === 'Б') currentDayData[name][lessonIndex] = 'Н/Б';
-    else if (current === 'Н/Б') currentDayData[name][lessonIndex] = 'П';
-    else currentDayData[name][lessonIndex] = 'Б';
+function toggleStatus(studentIndex, lessonIndex) {
+    if (isParentView) return;
 
-    saveData();
+    const studentName = students[studentIndex];
+    if (!studentName) return;
+
+    const cycle = ['Б', 'Н/Б', 'П', 'О'];
+    if (!currentDayData[studentName]) currentDayData[studentName] = Array(totalLessons).fill('Б');
+    
+    const current = currentDayData[studentName][lessonIndex] || 'Б';
+    const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
+
+    currentDayData[studentName][lessonIndex] = next;
+
+    saveToLocal();
+    render();
+
+    if (db) {
+        db.ref(`attendance/${getKey()}/${studentName}`).set(currentDayData[studentName]).catch(() => {});
+    }
 }
 
-// Отметить всех присутствующими
 function markAllPresent() {
-    if (isReadOnly) return;
+    if (isParentView) return;
     students.forEach(name => {
         currentDayData[name] = Array(totalLessons).fill('Б');
     });
-    saveData();
+    saveToLocal();
+    render();
+
+    if (db) {
+        db.ref(`attendance/${getKey()}`).set(currentDayData).catch(() => {});
+    }
 }
 
-// Копирование отчета для WhatsApp
+function setFilter(type, el) {
+    currentFilter = type;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    if (el) el.classList.add('active');
+    render();
+}
+
 function copyWhatsAppReport() {
-    if (!datePicker) return;
-    const formattedDate = datePicker.value.split('-').reverse().join('.');
-    let report = `📋 *Отсутствующие на ${formattedDate} (8З класс):*\n\n`;
+    let text = `📋 Отчет по посещаемости 8-З на ${getKey()}:\n\n`;
     let hasAbsent = false;
 
-    students.forEach((name, idx) => {
-        const studentData = currentDayData[name] || Array(totalLessons).fill('Б');
-        const abs = [];
-        studentData.forEach((st, i) => {
-            if (st !== 'Б') abs.push(`${i + 1}ур(${st})`);
-        });
-
-        if (abs.length > 0) {
+    students.forEach(name => {
+        const userLessons = currentDayData[name] || [];
+        const absents = userLessons.map((s, i) => (s !== 'Б' ? `${i + 1} ур (${s})` : null)).filter(Boolean);
+        if (absents.length > 0) {
+            text += `• ${name}: ${absents.join(', ')}\n`;
             hasAbsent = true;
-            report += `${idx + 1}. ${name} — ${abs.join(', ')}\n`;
         }
     });
 
-    if (!hasAbsent) report += "Все ученики присутствуют! 🎉";
+    if (!hasAbsent) text += "Все присутствуют! 🎉";
 
-    navigator.clipboard.writeText(report).then(() => {
+    navigator.clipboard.writeText(text).then(() => {
         alert("Отчет скопирован в буфер обмена!");
     });
 }
 
-// Экспорт в Excel
-function exportToExcel() {
-    if (!datePicker) return;
-    const rows = [["Ученик", "1 урок", "2 урок", "3 урок", "4 урок", "5 урок", "6 урок", "7 урок"]];
-
-    students.forEach(name => {
-        const studentData = currentDayData[name] || Array(totalLessons).fill('Б');
-        rows.push([name, ...studentData]);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Посещаемость");
-    XLSX.writeFile(wb, `Посещаемость_8З_${datePicker.value}.xlsx`);
-}
-
-// Переключение темы
 function toggleTheme() {
     const body = document.body;
     const btn = document.getElementById('themeBtn');
     if (body.getAttribute('data-theme') === 'dark') {
         body.removeAttribute('data-theme');
-        if (btn) btn.textContent = '🌙';
+        btn.textContent = '🌙';
     } else {
         body.setAttribute('data-theme', 'dark');
-        if (btn) btn.textContent = '☀️';
+        btn.textContent = '☀️';
     }
 }
 
 if (datePicker) {
-    datePicker.addEventListener('change', initSync);
+    datePicker.addEventListener('change', () => {
+        loadFromLocal();
+        render();
+        syncWithFirebase();
+    });
 }
-initSync();
+
+loadFromLocal();
+render();
+syncWithFirebase();
