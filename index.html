@@ -3,26 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Э-Күндөлүк (Класс)</title>
+    <title>Э-Күндөлүк (8-З)</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем библиотеку для создания чистого Excel -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
     <div class="header">
         <div class="top-bar">
-            <h1>Э-Күндөлүк</h1>
+            <h1>Э-Күндөлүк (8-З)</h1>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
         <div class="controls">
             <input type="date" id="datePicker">
-            <button class="btn-main" onclick="markAllPresent()">Все присутствуют</button>
-            <button class="btn-main" style="background-color: #107c41;" onclick="exportToExcel()">Скачать Excel</button>
+            <button class="btn-main" onclick="markAllPresent()">Все есть</button>
+            <button class="btn-main" style="background-color: #25D366;" onclick="copyWhatsAppReport()">📋 WhatsApp</button>
+            <button class="btn-main" style="background-color: #8e44ad;" onclick="openStats()">📊 Статистика</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Найти ученика..." oninput="render()">
         </div>
     </div>
 
     <div id="studentsList"></div>
+
+    <!-- Модальное окно статистики -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Аналитика за месяц</h2>
+                <button class="modal-close" onclick="closeStats()">&times;</button>
+            </div>
+            <div id="statsBody">
+                <!-- Сюда подгружается статистика -->
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
