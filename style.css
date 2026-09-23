@@ -4,13 +4,10 @@
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --accent-color: #2563eb;
-    --accent-hover: #1d4ed8;
-    
     --present-bg: #e6f4ea;
     --present-text: #137333;
     --absent-bg: #fce8e6;
     --absent-text: #c5221f;
-    
     --border-radius: 16px;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
@@ -20,7 +17,6 @@
     --card-bg: #1e293b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    
     --present-bg: rgba(19, 115, 51, 0.25);
     --present-text: #4ade80;
     --absent-bg: rgba(197, 34, 31, 0.25);
@@ -38,29 +34,29 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-primary);
-    padding: 16px;
+    padding: 12px;
     max-width: 500px;
     margin: 0 auto;
 }
 
-/* Шапка */
+/* Шапка прокручивается вместе со страницей */
 .header {
     background: var(--card-bg);
-    padding: 18px;
+    padding: 16px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .header h1 {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
 }
 
@@ -71,24 +67,16 @@ body {
     cursor: pointer;
 }
 
-.controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-/* Добавляем сетку для кнопок, чтобы они не вылезали за край */
+/* Сетка для блока управления */
 .controls-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-    gap: 8px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
 }
 
 .controls-grid input[type="date"] {
-    grid-column: 1 / -1;
-}
-
-input[type="date"], input[type="text"] {
+    grid-column: 1 / -1 !important;
+    width: 100%;
     padding: 10px;
     border: 1px solid var(--text-secondary);
     border-radius: 10px;
@@ -98,23 +86,29 @@ input[type="date"], input[type="text"] {
     outline: none;
 }
 
-input[type="date"] {
-    flex: 1;
-}
-
 .btn-main {
     background: var(--accent-color);
     color: white;
     border: none;
-    padding: 10px 14px;
+    padding: 10px;
     border-radius: 10px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     cursor: pointer;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-wa {
+    background-color: #25D366 !important;
+}
+
+.btn-stats {
+    background-color: #8e44ad !important;
+    grid-column: 1 / -1 !important;
 }
 
 .btn-main:active {
-    background: var(--accent-hover);
     transform: scale(0.98);
 }
 
@@ -124,14 +118,21 @@ input[type="date"] {
 
 .search-box input {
     width: 100%;
+    padding: 10px;
+    border: 1px solid var(--text-secondary);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
 }
 
-/* Карточка ученика */
+/* Карточки учеников */
 .student-card {
     background: var(--card-bg);
-    padding: 16px;
+    padding: 14px;
     border-radius: var(--border-radius);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     box-shadow: var(--shadow);
 }
 
@@ -139,12 +140,12 @@ input[type="date"] {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .student-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 .absent-count {
@@ -155,11 +156,10 @@ input[type="date"] {
     border-radius: 6px;
 }
 
-/* Сетка уроков */
 .lessons-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 
 .lesson-box {
@@ -169,44 +169,30 @@ input[type="date"] {
 }
 
 .lesson-title {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     color: var(--text-secondary);
     margin-bottom: 4px;
-    font-weight: 500;
 }
 
 .btn-status {
     width: 100%;
-    height: 42px;
+    height: 38px;
     border: none;
     border-radius: 8px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
 }
 
-.btn-status:active {
-    transform: scale(0.95);
-}
+.btn-present { background-color: var(--present-bg); color: var(--present-text); }
+.btn-absent { background-color: var(--absent-bg); color: var(--absent-text); }
 
-.btn-present {
-    background-color: var(--present-bg);
-    color: var(--present-text);
-}
-
-.btn-absent {
-    background-color: var(--absent-bg);
-    color: var(--absent-text);
-}
-
-/* Модальное окно статистики */
+/* Модальное окно */
 .modal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
     justify-content: center;
@@ -215,9 +201,7 @@ input[type="date"] {
     padding: 16px;
 }
 
-.modal.active {
-    display: flex;
-}
+.modal.active { display: flex; }
 
 .modal-content {
     background: var(--card-bg);
@@ -227,7 +211,6 @@ input[type="date"] {
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 .modal-header {
@@ -252,12 +235,5 @@ input[type="date"] {
     justify-content: space-between;
     padding: 8px 0;
     border-bottom: 1px dashed var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.stat-title {
-    font-weight: 600;
-    margin-top: 14px;
-    margin-bottom: 8px;
-    color: var(--accent-color);
+    font-size: 0.85rem;
 }
