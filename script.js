@@ -11,16 +11,14 @@ var firebaseConfig = {
 };
 
 try {
-    if (typeof firebase !== 'undefined') {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
 } catch (e) {
-    console.error("Ошибка подключения Firebase:", e);
+    console.error("Firebase error:", e);
 }
 
-var database = firebase.database();
+var database = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
 
 // 2. Список учеников 8-З класса (35 человек)
 var students = [
@@ -63,37 +61,53 @@ var students = [
 
 var totalLessons = 7;
 var currentDayData = {};
+var isReadOnly = new URLSearchParams(window.location.search).get('view') === 'readonly';
 
-var urlParams = new URLSearchParams(window.location.search);
-var isReadOnly = urlParams.get('view') === 'readonly';
-
-// 3. Установка даты по умолчанию
-var datePicker = document.getElementById('datePicker');
-if (datePicker) {
-    var today = new Date().toISOString().split('T')[0];
-    datePicker.value = today;
-    datePicker.addEventListener('change', loadData);
+function getTodayDate() {
+    var d = new Date();
+    var month = '' + (d.getMonth() + 1);
+    var day = '' + d.getDate();
+    var year = d.getFullYear();
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    return [year, month, day].join('-');
 }
 
-// 4. Загрузка данных из базы
-function loadData() {
-    if (!datePicker) return;
-    var selectedDate = datePicker.value;
-    
-    database.ref('attendance/' + selectedDate).once('value').then(function(snapshot) {
-        currentDayData = snapshot.val() || {};
-        
-        students.forEach(function(student) {
-            if (!currentDayData[student]) {
-                currentDayData[student] = Array(totalLessons).fill('Б');
-            }
-        });
-        
-        render();
+function initEmptyData() {
+    students.forEach(function(student) {
+        if (!currentDayData[student]) {
+            currentDayData[student] = Array(totalLessons).fill('Б');
+        }
     });
 }
 
-// 5. Цвета статусов
+function getKey() {
+    var datePicker = document.getElementById('datePicker');
+    if (datePicker && datePicker.value) {
+        return datePicker.value;
+    }
+    return getTodayDate();
+}
+
+function loadData() {
+    initEmptyData();
+    render(); // Рендерим сразу, чтобы экран не был пустым
+
+    if (!database) return;
+    var selectedDate = getKey();
+    
+    database.ref('attendance/' + selectedDate).once('value').then(function(snapshot) {
+        var val = snapshot.val();
+        if (val) {
+            currentDayData = val;
+        }
+        initEmptyData();
+        render();
+    }).catch(function(e) {
+        console.error("DB load error:", e);
+    });
+}
+
 function getStatusBtnClass(status) {
     if (status === 'Н/Б') return 'btn-absent';
     if (status === 'П') return 'btn-reason';
@@ -101,7 +115,6 @@ function getStatusBtnClass(status) {
     return 'btn-present';
 }
 
-// 6. Переключение статуса по клику
 function toggleStatus(name, lessonIndex) {
     if (isReadOnly) return;
     
@@ -110,7 +123,6 @@ function toggleStatus(name, lessonIndex) {
     }
     
     var current = currentDayData[name][lessonIndex];
-    
     if (current === 'Б') {
         currentDayData[name][lessonIndex] = 'Н/Б';
     } else if (current === 'Н/Б') {
@@ -121,28 +133,25 @@ function toggleStatus(name, lessonIndex) {
         currentDayData[name][lessonIndex] = 'Б';
     }
 
-    saveData();
+    render();
+    
+    if (database) {
+        database.ref('attendance/' + getKey()).set(currentDayData);
+    }
 }
 
-// 7. Сохранение изменений в Firebase
-function saveData() {
-    if (!datePicker) return;
-    var selectedDate = datePicker.value;
-    database.ref('attendance/' + selectedDate).set(currentDayData).then(function() {
-        render();
-    });
-}
-
-// 8. Кнопка «Все есть»
 function markAllPresent() {
     if (isReadOnly) return;
     students.forEach(function(student) {
         currentDayData[student] = Array(totalLessons).fill('Б');
     });
-    saveData();
+    render();
+    
+    if (database) {
+        database.ref('attendance/' + getKey()).set(currentDayData);
+    }
 }
 
-// 9. Отрисовка списка на экране
 function render() {
     var list = document.getElementById('studentsList');
     if (!list) return;
@@ -158,12 +167,11 @@ function render() {
         }
 
         var attendance = currentDayData[student] || Array(totalLessons).fill('Б');
-        
         while (attendance.length < totalLessons) {
             attendance.push('Б');
         }
 
-        var absentCount = attendance.filter(function(s) { return s === 'Н/Б' || s === 'П' || s === 'О'; }).length;
+        var absentCount = attendance.filter(function(s) { return s !== 'Б'; }).length;
 
         var card = document.createElement('div');
         card.className = 'student-card';
@@ -191,12 +199,22 @@ function render() {
     });
 }
 
-var searchElement = document.getElementById('searchInput');
-if (searchElement) {
-    searchElement.addEventListener('input', render);
-}
+// Запуск только после полной загрузки HTML-страницы
+document.addEventListener('DOMContentLoaded', function() {
+    var datePicker = document.getElementById('datePicker');
+    if (datePicker) {
+        datePicker.value = getTodayDate();
+        datePicker.addEventListener('change', loadData);
+    }
 
-// 10. Переключение темы (день/ночь)
+    var searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', render);
+    }
+
+    loadData();
+});
+
 function toggleTheme() {
     var currentTheme = document.documentElement.getAttribute('data-theme');
     var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -205,10 +223,8 @@ function toggleTheme() {
     if (themeBtn) themeBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
 }
 
-// 11. Генерация отчета для WhatsApp
 function copyWhatsAppReport() {
-    if (!datePicker) return;
-    var selectedDate = datePicker.value;
+    var selectedDate = getKey();
     var report = "📌 Отчёт по посещаемости за " + selectedDate + " (Класс 8-З):\n\n";
     var hasAbsents = false;
 
@@ -236,6 +252,3 @@ function copyWhatsAppReport() {
         alert("Отчёт скопирован!");
     });
 }
-
-// Первичная загрузка данных при открытии
-loadData();
