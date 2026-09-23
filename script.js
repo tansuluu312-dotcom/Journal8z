@@ -67,6 +67,32 @@ let currentDayData = {};
 const today = new Date();
 datePicker.value = today.toISOString().split('T')[0];
 
+const urlParams = new URLSearchParams(window.location.search);
+const isReadOnly = urlParams.get('view') === 'readonly';
+
+if (isReadOnly) {
+    const controls = document.querySelector('.controls');
+    if (controls) {
+        controls.style.display = 'none';
+    }
+
+    const disableButtons = () => {
+        const buttons = document.querySelectorAll('.btn-status');
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.cursor = 'default';
+            btn.style.opacity = '0.95';
+            btn.onclick = null;
+        });
+    };
+
+    const selectedDate = document.getElementById('datePicker').value;
+    db.ref(journal_8z/${selectedDate}).on('value', () => {
+        render();
+        disableButtons();
+    });
+}
+
 function getKey() {
     return datePicker.value;
 }
