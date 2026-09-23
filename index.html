@@ -3,42 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8-З Класс</title>
-    <link rel="stylesheet" href="style.css?v=100">
+    <title>Э-Күндөлүк | Журнал 8З</title>
+    <link rel="stylesheet" href="style.css?v=200">
 </head>
 <body>
 
-    <div class="header">
-        <div class="top-bar">
-            <h1>Э-Күндөлүк</h1>
+    <div class="app-card">
+        <!-- Шапка -->
+        <div class="header">
+            <div class="logo-title">
+                <div class="badge">8З</div>
+                <div>
+                    <h1>Э-Күндөлүк</h1>
+                    <span class="subtitle">Учет посещаемости</span>
+                </div>
+            </div>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
-        
-        <div class="controls-grid">
+
+        <!-- Выбор даты и Кнопка Все есть -->
+        <div class="date-row">
             <input type="date" id="datePicker">
-            <button class="btn-main" onclick="markAllPresent()">Все есть</button>
-            <button class="btn-main btn-wa" onclick="copyWhatsAppReport()">📋 WhatsApp</button>
-            <button class="btn-main btn-stats" onclick="openStats()">📊 Статистика</button>
+            <button class="btn-primary" onclick="markAllPresent()">✨ Все есть</button>
         </div>
 
+        <!-- Поиск -->
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Найти ученика..." oninput="render()">
+            <input type="text" id="searchInput" placeholder="🔍 Поиск ученика..." oninput="render()">
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filter-chips">
+            <button class="chip active" onclick="setFilter('all', this)">Все</button>
+            <button class="chip" onclick="setFilter('absent', this)">🩸 Только Н/Б</button>
+            <button class="chip" onclick="setFilter('reason', this)">📑 Больничный (П)</button>
+        </div>
+
+        <!-- Действия: WhatsApp и Статистика -->
+        <div class="actions-grid">
+            <button class="btn-action btn-whatsapp" onclick="copyWhatsAppReport()">
+                📋 WhatsApp
+            </button>
+            <button class="btn-action btn-stats" onclick="openStats()">
+                📊 Статистика за месяц
+            </button>
         </div>
     </div>
 
+    <!-- Список учеников -->
     <div id="studentsList"></div>
 
+    <!-- Модальное окно статистики -->
     <div class="modal" id="statsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📊 Статистика</h2>
+                <h2>📊 Статистика за месяц</h2>
                 <button class="modal-close" onclick="closeStats()">&times;</button>
             </div>
             <div id="statsBody"></div>
         </div>
     </div>
 
-    <!-- Firebase SDK (обязательно для работы базы) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     
