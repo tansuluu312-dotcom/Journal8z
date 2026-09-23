@@ -126,7 +126,7 @@ function render() {
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     students.forEach(name => {
-        if (query && !name.toLowerCase().includes(query)) return;
+        if (query && name.toLowerCase().includes(query)) return;
 
         const userLessons = currentDayData[name] || Array(totalLessons).fill('Б');
         const absentCount = userLessons.filter(s => s !== 'Б').length;
