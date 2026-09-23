@@ -2,62 +2,36 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Учёт посещаемости 8З</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Э-Күндөлүк (8-З)</title>
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
-    <div class="app-container">
-        <!-- Шапка -->
-        <header class="header">
-            <div class="header-left">
-                <span class="badge">8З</span>
-                <div class="date-box">
-                    <label for="datePicker">Дата:</label>
-                    <input type="date" id="datePicker">
-                </div>
-            </div>
-            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Сменить тему">🌙</button>
-        </header>
-
-        <!-- Кнопки действий -->
-        <div class="actions-bar">
-            <button class="btn-action btn-all" onclick="markAllPresent()">✨ Все есть</button>
-            <button class="btn-action btn-wa" onclick="copyWhatsAppReport()">📊 WhatsApp</button>
-            <button class="btn-action btn-stats" onclick="openStats()">📈 Статистика</button>
+    <div class="header">
+        <div class="top-bar">
+            <h1>Э-Күндөлүк (8-З)</h1>
+            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        </div>
+        
+        <div class="controls-grid">
+            <input type="date" id="datePicker">
+            <button class="btn-main admin-only" onclick="markAllPresent()">Все есть</button>
+            <button class="btn-main btn-wa admin-only" onclick="copyWhatsAppReport()">📋 WhatsApp</button>
+            <button class="btn-main btn-stats" onclick="openStats()">📊 Статистика</button>
         </div>
 
-        <!-- Поиск -->
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔍 Найти ученика..." oninput="render()">
         </div>
-
-        <!-- Фильтры -->
-        <div class="filter-chips">
-            <button class="chip active" onclick="setFilter('all', this)">Все</button>
-            <button class="chip" onclick="setFilter('absent', this)">Отсутствуют (Н/Б)</button>
-            <button class="chip" onclick="setFilter('reason', this)">Уважительная (П)</button>
-            <button class="chip" onclick="setFilter('late', this)">Опоздали (О)</button>
-        </div>
-
-        <!-- Список карточек -->
-        <div id="studentsList" class="students-list"></div>
     </div>
 
-    <!-- Модальное окно статистики -->
-    <div id="statsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>📊 Статистика пропусков</h3>
-                <button class="close-btn" onclick="closeStats()">✕</button>
-            </div>
-            <div id="statsBody" class="modal-body"></div>
-        </div>
-    </div>
+    <div id="studentsList"></div>
 
-    <script src="script.js"></script>
+    <!-- Подключаем Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="script.js?v=3"></script>
 </body>
 </html>
