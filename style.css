@@ -361,3 +361,11 @@ body {
         padding: 4px 6px;
     }
 }
+/* Блокировка для родителей */
+body:has(#readonlyBadge[style*="block"]) .btn-status,
+body:has(#readonlyBadge[style*="block"]) .btn-main,
+body:has(#readonlyBadge[style*="block"]) .btn-action {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
