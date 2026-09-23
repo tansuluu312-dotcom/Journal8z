@@ -1,15 +1,14 @@
 // 1. Конфигурация Firebase с твоими реальными ключами
 const firebaseConfig = {
-    apiKey: "AIzaSyCRSsm0to4ZY6Y9nyWEA8D0L6zcuDSbAPs",
-    authDomain: "journal-8z.firebaseapp.com",
-    databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "journal-8z",
-    storageBucket: "journal-8z.firebasestorage.app",
-    messagingSenderId: "3821431182",
-    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf",
-    measurementId: "G-65KDG0ZEMN"
+  apiKey: "AIzaSyCRSsm0to4ZY6Y9nyWEA8D0L6zcuDSbAPs",
+  authDomain: "journal-8z.firebaseapp.com",
+  databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "journal-8z",
+  storageBucket: "journal-8z.firebasestorage.app",
+  messagingSenderId: "3821431182",
+  appId: "1:3821431182:web:ea8a16b6533293b2f41cdf",
+  measurementId: "G-65KDG0ZEMN"
 };
-
 let db = null;
 try {
     if (typeof firebase !== 'undefined') {
