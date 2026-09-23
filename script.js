@@ -103,6 +103,28 @@ function syncWithFirebase() {
             });
             saveToLocal();
             render();
+            function toggleStatus(studentIndex, lessonIndex) {
+    var name = students[studentIndex];
+    if (!name) return;
+
+    if (!currentData[name]) {
+        currentData[name] = ['Б', 'Б', 'Б', 'Б', 'Б', 'Б', 'Б'];
+    }
+    
+    var current = currentData[name][lessonIndex] || 'Б';
+    if (current === 'Б') {
+        currentData[name][lessonIndex] = 'Н/Б';
+    } else if (current === 'Н/Б') {
+        currentData[name][lessonIndex] = 'П';
+    } else if (current === 'П') {
+        currentData[name][lessonIndex] = 'О';
+    } else {
+        currentData[name][lessonIndex] = 'Б';
+    }
+
+    saveData();
+}
+
         } else {
             db.ref(`attendance/${key}`).set(currentDayData);
         }
