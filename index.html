@@ -3,35 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Э-Күндөлүк (8-З)</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <title>Э-Күндөлүк (Класс 8-З)</title>
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
     <div class="header">
         <div class="top-bar">
-            <h1>Э-Күндөлүк (8-З)</h1>
+            <div class="title-container">
+                <div class="badge-8z">8З</div>
+                <div class="title-text">
+                    <h1>Э-Күндөлүк</h1>
+                    <p>Учет посещаемости</p>
+                </div>
+            </div>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
-        
-        <div class="controls-grid">
+
+        <div class="date-row">
             <input type="date" id="datePicker">
-            <button class="btn-main admin-only" onclick="markAllPresent()">Все есть</button>
-            <button class="btn-main btn-wa admin-only" onclick="copyWhatsAppReport()">📋 WhatsApp</button>
-            <button class="btn-main btn-stats" onclick="openStats()">📊 Статистика</button>
+            <button class="btn-all-present" id="btnAllPresent" onclick="markAllPresent()">✨ Все есть</button>
         </div>
 
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Найти ученика..." oninput="render()">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Поиск ученика..." oninput="render()">
+        </div>
+
+        <div class="chips-row">
+            <button class="chip active" onclick="setFilter('all', this)">Все</button>
+            <button class="chip" onclick="setFilter('absent', this)">🔥 Только Н/Б</button>
+            <button class="chip" onclick="setFilter('reason', this)">📑 Больничный (П)</button>
+            <button class="chip" onclick="setFilter('late', this)">⏰ Опоздал (О)</button>
+        </div>
+
+        <div class="actions-row">
+            <button class="btn-action btn-whatsapp" onclick="copyWhatsAppReport()">📊 WhatsApp</button>
+            <button class="btn-action btn-stats" onclick="openStats()">📊 Статистика</button>
         </div>
     </div>
 
     <div id="studentsList"></div>
 
-    <!-- Подключаем Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3>📊 Статистика за месяц</h3>
+                <button onclick="closeStats()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-primary);">&times;</button>
+            </div>
+            <div id="statsBody"></div>
+        </div>
+    </div>
 
-    <script src="script.js?v=3"></script>
+    <script src="script.js"></script>
 </body>
 </html>
