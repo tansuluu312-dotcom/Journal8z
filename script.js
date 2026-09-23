@@ -1,3 +1,24 @@
+var firebaseConfig = {
+    apiKey: "AIzaSyCRSSm8to4ZY6Y9nyMEABD6lzcuDSbAPs",
+    authDomain: "journal-8z.firebaseapp.com",
+    databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "journal-8z",
+    storageBucket: "journal-8z.appspot.com",
+    messagingSenderId: "3821431182",
+    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf",
+    measurementId: "G-6SKDG0ZEMN"
+};
+
+try {
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+} catch (e) {
+    console.error("Firebase error:", e);
+}
+
+var database = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+
 var students = [
     "Абдраманов Нурислам", "Акунжанова Арина", "Акунов Азирет Али", "Ахмедова Элиф",
     "Байдаалыев Али", "Востров Константин", "Джаныбеков Баяман", "Жумабекова Фатима",
@@ -11,64 +32,73 @@ var students = [
 ];
 
 var totalLessons = 7;
+var currentDayData = {};
 
-function getToday() {
+function getTodayDate() {
     var d = new Date();
-    return d.toISOString().split('T')[0];
+    var month = '' + (d.getMonth() + 1);
+    var day = '' + d.getDate();
+    var year = d.getFullYear();
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    return [year, month, day].join('-');
 }
 
 function getKey() {
-    var picker = document.getElementById('datePicker');
-    return (picker && picker.value) ? picker.value : getToday();
-}
-
-function getData() {
-    var raw = localStorage.getItem('journal_' + getKey());
-    if (raw) {
-        try { return JSON.parse(raw); } catch(e) {}
+    var datePicker = document.getElementById('datePicker');
+    if (datePicker && datePicker.value) {
+        return datePicker.value;
     }
-    var data = {};
-    students.forEach(function(s) {
-        data[s] = Array(totalLessons).fill('Б');
-    });
-    return data;
+    return getTodayDate();
 }
 
-function saveData(data) {
-    localStorage.setItem('journal_' + getKey(), JSON.stringify(data));
+function initEmptyData() {
+    students.forEach(function(student) {
+        if (!currentDayData[student]) {
+            currentDayData[student] = Array(totalLessons).fill('Б');
+        }
+    });
 }
 
 function render() {
     var list = document.getElementById('studentsList');
     if (!list) return;
-    list.innerHTML = '';
-
-    var data = getData();
+    
     var searchInput = document.getElementById('searchInput');
     var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    list.innerHTML = '';
 
-    students.forEach(function(name) {
-        if (query && !name.toLowerCase().includes(query)) return;
+    students.forEach(function(student) {
+        if (query && !student.toLowerCase().includes(query)) return;
 
-        var lessons = data[name] || Array(totalLessons).fill('Б');
-        var count = lessons.filter(function(s) { return s !== 'Б'; }).length;
+        var attendance = currentDayData[student] || Array(totalLessons).fill('Б');
+        while (attendance.length < totalLessons) {
+            attendance.push('Б');
+        }
+
+        var absentCount = attendance.filter(function(s) { return s !== 'Б'; }).length;
 
         var card = document.createElement('div');
         card.className = 'student-card';
 
-        var html = '<div class="student-info"><span class="student-name">' + name + 
-                   '</span><span class="absent-count">Отметок: ' + count + '</span></div><div class="lessons-grid">';
+        var html = '<div class="student-info">' +
+            '<span class="student-name">' + student + '</span>' +
+            '<span class="absent-count">Отметок: ' + absentCount + '</span>' +
+            '</div>' +
+            '<div class="lessons-grid">';
 
         for (var i = 0; i < totalLessons; i++) {
-            var st = lessons[i] || 'Б';
-            var cls = 'btn-present';
-            if (st === 'Н/Б') cls = 'btn-absent';
-            if (st === 'П') cls = 'btn-reason';
-            if (st === 'О') cls = 'btn-late';
+            var status = attendance[i] || 'Б';
+            var btnClass = 'btn-present';
+            if (status === 'Н/Б') btnClass = 'btn-absent';
+            else if (status === 'П') btnClass = 'btn-reason';
+            else if (status === 'О') btnClass = 'btn-late';
 
-            html += '<div class="lesson-box"><span class="lesson-title">' + (i + 1) + 
-                    ' ур</span><button class="btn-status ' + cls + '" onclick="toggleStatus(\'' + 
-                    name.replace(/'/g, "\\'") + '\', ' + i + ')">' + st + '</button></div>';
+            html += '<div class="lesson-box">' +
+                '<span class="lesson-title">' + (i + 1) + ' ур</span>' +
+                '<button class="btn-status ' + btnClass + '" onclick="toggleStatus(\'' + student.replace(/'/g, "\\'") + '\', ' + i + ')">' + status + '</button>' +
+                '</div>';
         }
 
         html += '</div>';
@@ -77,39 +107,73 @@ function render() {
     });
 }
 
-function toggleStatus(name, index) {
-    var data = getData();
-    var lessons = data[name] || Array(totalLessons).fill('Б');
-    var current = lessons[index];
+function syncWithFirebase() {
+    if (!database) {
+        initEmptyData();
+        render();
+        return;
+    }
+    
+    var selectedDate = getKey();
+    database.ref('attendance/' + selectedDate).on('value', function(snapshot) {
+        var val = snapshot.val();
+        if (val) {
+            currentDayData = val;
+        } else {
+            currentDayData = {};
+            initEmptyData();
+        }
+        render();
+    });
+}
 
-    if (current === 'Б') lessons[index] = 'Н/Б';
-    else if (current === 'Н/Б') lessons[index] = 'П';
-    else if (current === 'П') lessons[index] = 'О';
-    else lessons[index] = 'Б';
+function toggleStatus(name, lessonIndex) {
+    if (!currentDayData[name]) {
+        currentDayData[name] = Array(totalLessons).fill('Б');
+    }
+    
+    var current = currentDayData[name][lessonIndex];
+    if (current === 'Б') currentDayData[name][lessonIndex] = 'Н/Б';
+    else if (current === 'Н/Б') currentDayData[name][lessonIndex] = 'П';
+    else if (current === 'П') currentDayData[name][lessonIndex] = 'О';
+    else currentDayData[name][lessonIndex] = 'Б';
 
-    data[name] = lessons;
-    saveData(data);
     render();
+    
+    if (database) {
+        database.ref('attendance/' + getKey()).set(currentDayData);
+    }
 }
 
 function markAllPresent() {
-    var data = {};
-    students.forEach(function(s) {
-        data[s] = Array(totalLessons).fill('Б');
+    students.forEach(function(student) {
+        currentDayData[student] = Array(totalLessons).fill('Б');
     });
-    saveData(data);
     render();
+    
+    if (database) {
+        database.ref('attendance/' + getKey()).set(currentDayData);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var picker = document.getElementById('datePicker');
-    if (picker) {
-        picker.value = getToday();
-        picker.addEventListener('change', render);
+    var datePicker = document.getElementById('datePicker');
+    if (datePicker) {
+        datePicker.value = getTodayDate();
+        datePicker.addEventListener('change', function() {
+            if (database) {
+                database.ref('attendance/' + getKey()).off();
+            }
+            syncWithFirebase();
+        });
     }
-    var search = document.getElementById('searchInput');
-    if (search) {
-        search.addEventListener('input', render);
+
+    var searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', render);
     }
+
+    initEmptyData();
     render();
+    syncWithFirebase();
 });
