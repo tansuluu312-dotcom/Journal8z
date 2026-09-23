@@ -1,28 +1,29 @@
+// Замени данные ниже на свои реальные ключи из Firebase Console
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "ТВОЙ_API_KEY",
+    authDomain: "ТВОЙ_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://ТВОЙ_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "ТВОЙ_PROJECT_ID",
+    storageBucket: "ТВОЙ_PROJECT_ID.appspot.com",
+    messagingSenderId: "ТВОЙ_SENDER_ID",
+    appId: "ТВОЙ_APP_ID"
 };
 
 let db = null;
 try {
-    if (typeof firebase !== 'undefined' && firebase.initializeApp) {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         db = firebase.database();
     }
 } catch (e) {
-    console.warn("Офлайн режим: работаем через localStorage");
+    console.error("Ошибка подключения Firebase:", e);
 }
 
-// Проверка: открыт ли сайт в режиме просмотра для родителей (?mode=view)
 const urlParams = new URLSearchParams(window.location.search);
 const isParentView = urlParams.get('mode') === 'view';
 
-// Полный список класса (35 человек)
 const students = [
     "Абдраманов Нурислам",
     "Акунжанова Арина",
@@ -66,7 +67,6 @@ const datePicker = document.getElementById('datePicker');
 const studentsList = document.getElementById('studentsList');
 const searchInput = document.getElementById('searchInput');
 
-let currentFilter = 'all';
 let currentDayData = {};
 
 if (datePicker && !datePicker.value) {
@@ -77,43 +77,27 @@ function getKey() {
     return datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
 }
 
-function loadFromLocal() {
-    const raw = localStorage.getItem(`attendance_${getKey()}`);
-    if (raw) {
-        try {
-            currentDayData = JSON.parse(raw);
-            return;
-        } catch (e) {}
-    }
+function loadDefaultData() {
     currentDayData = {};
     students.forEach(name => {
         currentDayData[name] = Array(totalLessons).fill('Б');
     });
 }
 
-function saveToLocal() {
-    if (isParentView) return;
-    localStorage.setItem(`attendance_${getKey()}`, JSON.stringify(currentDayData));
-}
-
-function syncWithFirebase() {
+// Подписка на изменения Firebase в реальном времени (.on('value'))
+function listenToFirebase() {
     if (!db) return;
     const key = getKey();
-    
-    db.ref(`attendance/${key}`).once('value').then(snapshot => {
+
+    db.ref(`attendance/${key}`).on('value', (snapshot) => {
         const val = snapshot.val();
         if (val) {
-            students.forEach(name => {
-                if (val[name] && Array.isArray(val[name])) {
-                    currentDayData[name] = val[name];
-                }
-            });
-            saveToLocal();
-            render();
-        } else if (!isParentView) {
-            db.ref(`attendance/${key}`).set(currentDayData);
+            currentDayData = val;
+        } else {
+            loadDefaultData();
         }
-    }).catch(() => {});
+        render();
+    });
 }
 
 function render() {
@@ -122,8 +106,7 @@ function render() {
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     if (isParentView) {
-        const adminControls = document.querySelectorAll('.admin-only');
-        adminControls.forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
     }
 
     students.forEach((name, studentIndex) => {
@@ -131,10 +114,6 @@ function render() {
 
         const userLessons = currentDayData[name] || Array(totalLessons).fill('Б');
         const absentCount = userLessons.filter(s => s !== 'Б').length;
-
-        if (currentFilter === 'absent' && !userLessons.includes('Н/Б')) return;
-        if (currentFilter === 'reason' && !userLessons.includes('П')) return;
-        if (currentFilter === 'late' && !userLessons.includes('О')) return;
 
         const card = document.createElement('div');
         card.className = 'student-card';
@@ -146,9 +125,8 @@ function render() {
             if (status === 'П') cls = 'btn-reason';
             if (status === 'О') cls = 'btn-late';
 
-            const disabledAttr = isParentView ? 'disabled style="cursor: default;"' : '';
+            const disabledAttr = isParentView ? 'disabled style="opacity: 0.8; cursor: default;"' : '';
 
-            // Безопасный вызов функции по числовому индексу
             lessonsHTML += `
                 <div class="lesson-box">
                     <span class="lesson-title">${lessonIndex + 1} ур</span>
@@ -176,38 +154,28 @@ function toggleStatus(studentIndex, lessonIndex) {
 
     const cycle = ['Б', 'Н/Б', 'П', 'О'];
     if (!currentDayData[studentName]) currentDayData[studentName] = Array(totalLessons).fill('Б');
-    
+
     const current = currentDayData[studentName][lessonIndex] || 'Б';
     const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
 
     currentDayData[studentName][lessonIndex] = next;
 
-    saveToLocal();
-    render();
-
+    // Сохраняем прямо в Firebase
     if (db) {
-        db.ref(`attendance/${getKey()}/${studentName}`).set(currentDayData[studentName]).catch(() => {});
+        db.ref(`attendance/${getKey()}/${studentName}`).set(currentDayData[studentName]);
+    } else {
+        render();
     }
 }
 
 function markAllPresent() {
     if (isParentView) return;
-    students.forEach(name => {
-        currentDayData[name] = Array(totalLessons).fill('Б');
-    });
-    saveToLocal();
-    render();
-
+    loadDefaultData();
     if (db) {
-        db.ref(`attendance/${getKey()}`).set(currentDayData).catch(() => {});
+        db.ref(`attendance/${getKey()}`).set(currentDayData);
+    } else {
+        render();
     }
-}
-
-function setFilter(type, el) {
-    currentFilter = type;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    if (el) el.classList.add('active');
-    render();
 }
 
 function copyWhatsAppReport() {
@@ -244,12 +212,9 @@ function toggleTheme() {
 
 if (datePicker) {
     datePicker.addEventListener('change', () => {
-        loadFromLocal();
-        render();
-        syncWithFirebase();
+        listenToFirebase();
     });
 }
 
-loadFromLocal();
-render();
-syncWithFirebase();
+loadDefaultData();
+listenToFirebase();
