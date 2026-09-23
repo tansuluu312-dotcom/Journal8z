@@ -3,72 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Э-Күндөлүк | Журнал 8З</title>
+    <title>Э-Күндөлүк (Класс)</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- Библиотека Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Подключаем библиотеку для создания чистого Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
-    <div class="glass-header">
+    <div class="header">
         <div class="top-bar">
-            <div class="brand">
-                <div class="logo-icon">8З</div>
-                <div>
-                    <h1>Э-Күндөлүк</h1>
-                    <span class="subtitle">Учет посещаемости</span>
-                </div>
-            </div>
+            <h1>Э-Күндөлүк</h1>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
-        
         <div class="controls">
-            <div class="date-input-wrapper">
-                <input type="date" id="datePicker">
-            </div>
-            <button class="btn-main editor-only" onclick="markAllPresent()">
-                <span>✨</span> Все есть
-            </button>
-        </div>
-
-        <div class="search-section">
-            <div class="search-input-wrapper">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" list="searchSuggestions" placeholder="Поиск ученика..." oninput="render()">
-            </div>
-            
-            <datalist id="searchSuggestions">
-                <option value="Только Н/Б">
-                <option value="Больничный (П)">
-            </datalist>
-
-            <div class="quick-tags">
-                <button class="tag-btn active" onclick="setQuickFilter('all')">Все</button>
-                <button class="tag-btn tag-absent" onclick="setQuickFilter('Н/Б')">🔥 Только Н/Б</button>
-                <button class="tag-btn tag-reason" onclick="setQuickFilter('П')">🏥 Больничный (П)</button>
-            </div>
-        </div>
-
-        <div class="action-buttons editor-only">
-            <button class="btn-action btn-copy" onclick="copyWhatsAppReport()">
-                <span>📋</span> WhatsApp
-            </button>
-            <button class="btn-action btn-excel" onclick="exportToExcel()">
-                <span>📊</span> Excel
-            </button>
-        </div>
-        
-        <div class="readonly-badge" id="readonlyBadge" style="display: none;">
-            👀 Режим просмотра (Только чтение)
+            <input type="date" id="datePicker">
+            <button class="btn-main" onclick="markAllPresent()">Все присутствуют</button>
+            <button class="btn-main" style="background-color: #107c41;" onclick="exportToExcel()">Скачать Excel</button>
         </div>
     </div>
 
-    <div id="studentsList" class="cards-container"></div>
+    <div id="studentsList"></div>
 
     <script src="script.js"></script>
 </body>
