@@ -1,4 +1,4 @@
-// Обновленный список учеников 8-З класса (35 человек)
+// Список учеников 8-З класса (35 человек)
 const students = [
     "Абдраманов Нурислам",
     "Акунжанова Арина",
@@ -41,17 +41,14 @@ const totalLessons = 7;
 const datePicker = document.getElementById('datePicker');
 const studentsList = document.getElementById('studentsList');
 
-// Установка сегодняшней даты по умолчанию
 if (datePicker) {
     datePicker.valueAsDate = new Date();
 }
 
-// Ключ для хранения в localStorage
 function getStorageKey() {
     return `attendance_${datePicker.value}`;
 }
 
-// Загрузка состояния (если нет — все присутствуют "Б")
 function loadData() {
     const saved = localStorage.getItem(getStorageKey());
     if (saved) return JSON.parse(saved);
@@ -63,12 +60,10 @@ function loadData() {
     return initialData;
 }
 
-// Сохранение текущего состояния
 function saveData(data) {
     localStorage.setItem(getStorageKey(), JSON.stringify(data));
 }
 
-// Отрисовка списка
 function render() {
     if (!studentsList) return;
     const data = loadData();
@@ -107,7 +102,6 @@ function render() {
     });
 }
 
-// Переключение статуса "Б" <-> "Н/Б"
 function toggleStatus(studentIndex, lessonIndex) {
     const name = students[studentIndex];
     const data = loadData();
@@ -117,7 +111,6 @@ function toggleStatus(studentIndex, lessonIndex) {
     render();
 }
 
-// Кнопка "Все присутствуют"
 function markAllPresent() {
     const data = {};
     students.forEach(name => {
@@ -127,35 +120,43 @@ function markAllPresent() {
     render();
 }
 
-// Экспорт посещаемости в CSV/Excel (без пустых строк)
 function exportToExcel() {
     const data = loadData();
     const currentDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
     
-    let csvContent = "ФИО Ученика,1 урок,2 урок,3 урок,4 урок,5 урок,6 урок,7 урок,Всего пропусков\n";
+    let tableHTML = `<table border="1"><thead><tr>
+        <th>ФИО Ученика</th>
+        <th>1 урок</th><th>2 урок</th><th>3 урок</th><th>4 урок</th>
+        <th>5 урок</th><th>6 урок</th><th>7 урок</th>
+        <th>Всего пропусков</th>
+    </tr></thead><tbody>`;
 
     students.forEach(name => {
         const studentLessons = data[name] || Array(totalLessons).fill('Б');
         const absentCount = studentLessons.filter(s => s === 'Н/Б').length;
-        const row = `"${name}",` + studentLessons.join(',') + `,${absentCount}`;
-        csvContent += row + "\n";
+        
+        tableHTML += `<tr><td>${name}</td>`;
+        studentLessons.forEach(st => {
+            tableHTML += `<td>${st}</td>`;
+        });
+        tableHTML += `<td>${absentCount}</td></tr>`;
     });
 
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    tableHTML += `</tbody></table>`;
+
+    const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     
     link.setAttribute("href", url);
-    link.setAttribute("download", `Посещаемость_8З_${currentDate}.csv`);
+    link.setAttribute("download", `Посещаемость_8З_${currentDate}.xls`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 
-// Перерисовка при изменении даты
 if (datePicker) {
     datePicker.addEventListener('change', render);
 }
 
-// Инициализация при загрузке
 render();
