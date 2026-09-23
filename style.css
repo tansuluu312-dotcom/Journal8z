@@ -77,6 +77,17 @@ body {
     flex-wrap: wrap;
 }
 
+/* Добавляем сетку для кнопок, чтобы они не вылезали за край */
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+}
+
+.controls-grid input[type="date"] {
+    grid-column: 1 / -1;
+}
+
 input[type="date"], input[type="text"] {
     padding: 10px;
     border: 1px solid var(--text-secondary);
