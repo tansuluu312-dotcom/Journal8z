@@ -1,230 +1,233 @@
 :root {
-    --bg-color: #ebf0f5;
+    --bg-color: #f4f6fb;
     --card-bg: #ffffff;
-    --card-sub-bg: #f8fafc;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
-    --accent-blue: #2563eb;
-    --accent-green: #22c55e;
-    --accent-dark-green: #1e3a2b;
+    --border-color: #e2e8f0;
+
+    /* Статусы */
+    --status-b-bg: #e6f4ea;
+    --status-b-text: #137333;
     
-    --present-bg: #dcfce7;
-    --present-text: #15803d;
-    --absent-bg: #fee2e2;
-    --absent-text: #b91c1c;
-    --reason-bg: #fef9c3;
-    --reason-text: #a16207;
-    --late-bg: #ffedd5;
-    --late-text: #c2410c;
+    --status-nb-bg: #fce8e6;
+    --status-nb-text: #c5221f;
     
-    --border-radius: 20px;
-    --shadow: 0 4px 25px rgba(0, 0, 0, 0.04);
+    --status-p-bg: #feefc3;
+    --status-p-text: #b06000;
+    
+    --status-o-bg: #e8eaed;
+    --status-o-text: #3c4043;
 }
 
 [data-theme="dark"] {
     --bg-color: #0f172a;
     --card-bg: #1e293b;
-    --card-sub-bg: #0f172a;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
+    --border-color: #334155;
+
+    --status-b-bg: #133e2b;
+    --status-b-text: #81c995;
     
-    --present-bg: rgba(34, 197, 94, 0.2);
-    --present-text: #4ade80;
-    --absent-bg: rgba(239, 68, 68, 0.2);
-    --absent-text: #f87171;
-    --reason-bg: rgba(234, 179, 8, 0.2);
-    --reason-text: #facc15;
-    --late-bg: rgba(249, 115, 22, 0.25);
-    --late-text: #fb923c;
+    --status-nb-bg: #4a151b;
+    --status-nb-text: #f28b82;
+    
+    --status-p-bg: #423108;
+    --status-p-text: #fdd663;
+    
+    --status-o-bg: #2d3748;
+    --status-o-text: #bdc1c6;
+}
+
+/* ЗАЩИТА ОТ ГОРИЗОНТАЛЬНОГО СКРОЛЛА И СРЕЗАНИЯ */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    transition: all 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
     background-color: var(--bg-color);
     color: var(--text-primary);
-    padding: 16px;
-    max-width: 480px;
-    margin: 0 auto;
-}
-
-/* Главная плашка-шапка */
-.header {
-    background: var(--card-bg);
-    padding: 22px;
-    border-radius: 24px;
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-}
-
-.top-bar {
+    padding: 12px;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-.title-container {
+.app-container {
+    width: 100%;
+    max-width: 600px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 12px;
 }
 
-.badge-8z {
-    background: var(--accent-blue);
+/* Шапка */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    padding: 12px 14px;
+    border-radius: 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge {
+    background: linear-gradient(135deg, #ff007a, #7928ca, #00dfd8);
     color: white;
     font-weight: 800;
-    font-size: 1.1rem;
-    padding: 8px 12px;
+    font-size: 1rem;
+    padding: 6px 14px;
     border-radius: 12px;
-    line-height: 1;
+    box-shadow: 0 4px 12px rgba(121, 40, 202, 0.35);
 }
 
-.title-text h1 {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--text-primary);
-}
-
-.title-text p {
-    font-size: 0.75rem;
+.date-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
     color: var(--text-secondary);
-    margin-top: 2px;
+}
+
+.date-box input {
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 10px;
+    outline: none;
+    font-weight: 600;
+    font-size: 0.85rem;
 }
 
 .theme-toggle {
     background: transparent;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
 }
 
-/* Дата и кнопка "Все есть" */
-.date-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-input[type="date"] {
-    border: none;
-    background: transparent;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    outline: none;
-    cursor: pointer;
-}
-
-.btn-all-present {
-    background: var(--accent-blue);
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 14px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-}
-
-/* Поиск */
-.search-box {
-    position: relative;
-    margin-bottom: 14px;
-}
-
-.search-box input {
-    width: 100%;
-    padding: 12px 14px 12px 38px;
-    border: none;
-    background: var(--card-sub-bg);
-    border-radius: 14px;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    outline: none;
-}
-
-.search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.9rem;
-    opacity: 0.5;
-}
-
-/* Чипсы-фильтры */
-.chips-row {
-    display: flex;
+/* БЛОК КНОПОК: АДАПТИВНАЯ СЕТКА БЕЗ СРЕЗАНИЙ */
+.actions-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin-bottom: 18px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-}
-
-.chip {
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: var(--card-sub-bg);
-    color: var(--text-secondary);
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.chip.active {
-    background: var(--accent-blue);
-    color: white;
-}
-
-/* Кнопки действия (WhatsApp и Статистика) */
-.actions-row {
-    display: flex;
-    gap: 10px;
+    width: 100%;
 }
 
 .btn-action {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 14px;
-    color: white;
-    font-weight: 700;
-    font-size: 0.85rem;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    border: none;
+    padding: 11px 4px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #ffffff;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
+}
+
+.btn-action:active {
+    transform: scale(0.95);
+}
+
+/* 1. Все есть — Фиолетово-розово-бирюзовый перелив */
+.btn-all {
+    background: linear-gradient(135deg, #ff007a 0%, #7928ca 50%, #00dfd8 100%);
+    box-shadow: 0 4px 12px rgba(121, 40, 202, 0.35);
+}
+
+/* 2. WhatsApp — Сочный изумрудно-салатовый перелив */
+.btn-wa {
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #34d399 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+/* 3. Статистика — Неоновый сине-голубой перелив */
+.btn-stats {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 50%, #3a7bd5 100%);
+    box-shadow: 0 4px 12px rgba(0, 114, 255, 0.35);
+}
+
+/* Поиск */
+.search-box input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+/* Фильтры */
+.filter-chips {
+    display: flex;
     gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.chip {
+    white-space: nowrap;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-size: 0.78rem;
+    font-weight: 600;
     cursor: pointer;
 }
 
-.btn-whatsapp { background: #22c55e; }
-.btn-stats { background: #1e3a2b; }
+.chip.active {
+    background: var(--text-primary);
+    color: var(--bg-color);
+    border-color: var(--text-primary);
+}
 
-/* Карточки учеников */
+/* Карточка ученика */
+.students-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .student-card {
     background: var(--card-bg);
-    padding: 18px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .student-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
 }
 
 .student-name {
@@ -236,64 +239,73 @@ input[type="date"] {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-secondary);
+    background: var(--bg-color);
+    padding: 3px 8px;
+    border-radius: 6px;
 }
 
-/* Сетка уроков */
 .lessons-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 
 .lesson-box {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 2px;
 }
 
 .lesson-title {
     font-size: 0.65rem;
     color: var(--text-secondary);
-    margin-bottom: 6px;
+    font-weight: 600;
 }
 
 .btn-status {
     width: 100%;
-    height: 38px;
+    height: 36px;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     cursor: pointer;
+    transition: transform 0.08s;
 }
 
-.btn-present { background-color: var(--present-bg); color: var(--present-text); }
-.btn-absent { background-color: var(--absent-bg); color: var(--absent-text); }
-.btn-reason { background-color: var(--reason-bg); color: var(--reason-text); }
-.btn-late { background-color: var(--late-bg); color: var(--late-text); }
+.btn-status:active {
+    transform: scale(0.9);
+}
+
+.btn-present { background: var(--status-b-bg); color: var(--status-b-text); }
+.btn-absent  { background: var(--status-nb-bg); color: var(--status-nb-text); }
+.btn-reason  { background: var(--status-p-bg); color: var(--status-p-text); }
+.btn-late    { background: var(--status-o-bg); color: var(--status-o-text); }
 
 /* Модальное окно */
 .modal {
-    display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5);
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    padding: 16px;
+    z-index: 100;
 }
 
 .modal.active { display: flex; }
 
 .modal-content {
     background: var(--card-bg);
-    padding: 20px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
+    width: 100%;
+    max-width: 450px;
     max-height: 80vh;
-    overflow-y: auto;
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
@@ -303,9 +315,49 @@ input[type="date"] {
     margin-bottom: 12px;
 }
 
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.modal-body {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--card-sub-bg);
+    padding: 10px 12px;
+    background: var(--bg-color);
+    border-radius: 10px;
+    font-size: 0.85rem;
+}
+
+/* АДАПТИВ ПОД МАЛЕНЬКИЕ ЭКРАНЫ ТЕЛЕФОНОВ (до 380px) */
+@media (max-width: 380px) {
+    .actions-bar {
+        gap: 4px;
+    }
+    
+    .btn-action {
+        font-size: 0.72rem;
+        padding: 9px 2px;
+        border-radius: 10px;
+    }
+
+    .badge {
+        font-size: 0.88rem;
+        padding: 5px 10px;
+    }
+
+    .date-box input {
+        font-size: 0.75rem;
+        padding: 4px 6px;
+    }
 }
