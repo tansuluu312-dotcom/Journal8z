@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Э-Күндөлүк (8-З)</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -13,12 +13,15 @@
             <h1>Э-Күндөлүк (8-З)</h1>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
-<div class="controls controls-grid">
-    <input type="date" id="datePicker">
-    <button class="btn-main" onclick="markAllPresent()">Все есть</button>
-    <button class="btn-main" style="background-color: #25D366;" onclick="copyWhatsAppReport()">📋 WhatsApp</button>
-    <button class="btn-main" style="background-color: #8e44ad;" onclick="openStats()">📊 Статистика</button>
-</div>
+        
+        <!-- Сетка кнопок: Календарь на всю ширину, кнопки аккуратно 2х2 -->
+        <div class="controls-grid">
+            <input type="date" id="datePicker">
+            <button class="btn-main" onclick="markAllPresent()">Все есть</button>
+            <button class="btn-main btn-wa" onclick="copyWhatsAppReport()">📋 WhatsApp</button>
+            <button class="btn-main btn-stats" onclick="openStats()">📊 Статистика</button>
+        </div>
+
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔍 Найти ученика..." oninput="render()">
         </div>
@@ -33,9 +36,7 @@
                 <h2>📊 Аналитика за месяц</h2>
                 <button class="modal-close" onclick="closeStats()">&times;</button>
             </div>
-            <div id="statsBody">
-                <!-- Сюда подгружается статистика -->
-            </div>
+            <div id="statsBody"></div>
         </div>
     </div>
 
