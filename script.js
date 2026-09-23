@@ -1,4 +1,3 @@
-// Список учеников 8-З класса (35 человек)
 const students = [
     "Абдраманов Нурислам",
     "Акунжанова Арина",
@@ -40,6 +39,7 @@ const students = [
 const totalLessons = 7;
 const datePicker = document.getElementById('datePicker');
 const studentsList = document.getElementById('studentsList');
+const searchInput = document.getElementById('searchInput');
 
 if (datePicker) {
     datePicker.valueAsDate = new Date();
@@ -68,8 +68,13 @@ function render() {
     if (!studentsList) return;
     const data = loadData();
     studentsList.innerHTML = '';
+    const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     students.forEach((name, studentIndex) => {
+        if (searchQuery && !name.toLowerCase().includes(searchQuery)) {
+            return;
+        }
+
         const card = document.createElement('div');
         card.className = 'student-card';
 
@@ -120,39 +125,112 @@ function markAllPresent() {
     render();
 }
 
-// Профессиональный экспорт через SheetJS (настоящий XLSX)
-function exportToExcel() {
-    if (typeof XLSX === 'undefined') {
-        alert("Библиотека Excel еще загружается, попробуйте через пару секунд.");
-        return;
-    }
-
+function copyWhatsAppReport() {
     const data = loadData();
-    const currentDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-
-    // Формируем массив данных
-    const excelData = [
-        ["ФИО Ученика", "1 урок", "2 урок", "3 урок", "4 урок", "5 урок", "6 урок", "7 урок", "Всего пропусков"]
-    ];
+    const currentDate = datePicker ? datePicker.value.split('-').reverse().join('.') : '';
+    
+    let report = `📋 *Отсутствующие на ${currentDate} (8-З класс):*\n\n`;
+    let hasAbsent = false;
+    let count = 1;
 
     students.forEach(name => {
         const studentLessons = data[name] || Array(totalLessons).fill('Б');
-        const absentCount = studentLessons.filter(s => s === 'Н/Б').length;
-        
-        excelData.push([
-            name,
-            ...studentLessons,
-            absentCount
-        ]);
+        const absentLessons = [];
+
+        studentLessons.forEach((status, index) => {
+            if (status === 'Н/Б') {
+                absentLessons.push(`${index + 1} ур`);
+            }
+        });
+
+        if (absentLessons.length > 0) {
+            hasAbsent = true;
+            report += `${count}. *${name}* — ${absentLessons.join(', ')}\n`;
+            count++;
+        }
     });
 
-    // Создаем книгу и лист Excel
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Посещаемость");
+    if (!hasAbsent) {
+        report += "Все ученики присутствуют! 🎉";
+    }
 
-    // Скачиваем бинарный файл .xlsx
-    XLSX.writeFile(workbook, `Посещаемость_8З_${currentDate}.xlsx`);
+    navigator.clipboard.writeText(report).then(() => {
+        alert("Отчет скопирован! Вставьте его в чат WhatsApp.");
+    }).catch(() => {
+        alert("Не удалось скопировать.");
+    });
+}
+
+// РАБОТА СО СТАТИСТИКОЙ ЗА МЕСЯЦ
+function openStats() {
+    const modal = document.getElementById('statsModal');
+    const statsBody = document.getElementById('statsBody');
+    const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+    const targetYearMonth = selectedDate.substring(0, 7); // Формат YYYY-MM
+
+    const studentTotals = {};
+    students.forEach(name => studentTotals[name] = 0);
+
+    let filledDaysCount = 0;
+    let grandTotalAbsent = 0;
+
+    // Сканируем localStorage за выбранный месяц
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(`attendance_${targetYearMonth}`)) {
+            filledDaysCount++;
+            try {
+                const dayData = JSON.parse(localStorage.getItem(key));
+                students.forEach(name => {
+                    if (dayData[name]) {
+                        const count = dayData[name].filter(s => s === 'Н/Б').length;
+                        studentTotals[name] += count;
+                        grandTotalAbsent += count;
+                    }
+                });
+            } catch (e) {}
+        }
+    }
+
+    if (filledDaysCount === 0) {
+        statsBody.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">Нет зафиксированных данных за ${targetYearMonth}.</p>`;
+        modal.classList.add('active');
+        return;
+    }
+
+    // Сортировка по убыванию пропусков
+    const sorted = Object.entries(studentTotals).sort((a, b) => b[1] - a[1]);
+    const topAbsentees = sorted.filter(item => item[1] > 0);
+    const perfectAttendance = sorted.filter(item => item[1] === 0);
+
+    let html = `
+        <div class="stat-item"><span>Отмечено дней:</span> <strong>${filledDaysCount}</strong></div>
+        <div class="stat-item"><span>Всего пропущенных уроков:</span> <strong>${grandTotalAbsent}</strong></div>
+        
+        <div class="stat-title">🚨 Лидеры по пропускам:</div>
+    `;
+
+    if (topAbsentees.length > 0) {
+        topAbsentees.slice(0, 5).forEach(([name, count], idx) => {
+            html += `<div class="stat-item"><span>${idx + 1}. ${name}</span> <strong style="color: var(--absent-text);">${count} ур.</strong></div>`;
+        });
+    } else {
+        html += `<p style="font-size: 0.85rem; color: var(--text-secondary);">Пропусков за месяц нет!</p>`;
+    }
+
+    html += `<div class="stat-title">🌟 100% посещаемость (${perfectAttendance.length} чел.):</div>`;
+    if (perfectAttendance.length > 0) {
+        html += `<p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">${perfectAttendance.map(item => item[0]).join(', ')}</p>`;
+    } else {
+        html += `<p style="font-size: 0.85rem; color: var(--text-secondary);">У всех есть хотя бы 1 пропуск.</p>`;
+    }
+
+    statsBody.innerHTML = html;
+    modal.classList.add('active');
+}
+
+function closeStats() {
+    document.getElementById('statsModal').classList.remove('active');
 }
 
 function toggleTheme() {
