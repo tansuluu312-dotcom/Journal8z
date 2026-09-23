@@ -1,139 +1,156 @@
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCRSsm0to4ZY6Y9nyWEA8D0L6zcuDSbAPs",
+// 1. Конфигурация Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyCRSsM...путь_к_твоим_ключам",
     authDomain: "journal-8z.firebaseapp.com",
     databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "journal-8z",
-    storageBucket: "journal-8z.firebasestorage.app",
+    storageBucket: "journal-8z.appspot.com",
     messagingSenderId: "3821431182",
-    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf",
-    measurementId: "G-65KDG0ZEMN"
-  };
-
-
+    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf"
+};
 
 let db = null;
 try {
-    if (typeof firebase !== 'undefined') {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+    if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         db = firebase.database();
     }
 } catch (e) {
-    console.error("Ошибка подключения Firebase:", e);
+    console.warn("Firebase оффлайн режим", e);
 }
 
-const urlParams = new URLSearchParams(window.location.search);
-const isParentView = urlParams.get('mode') === 'view';
-
+// 2. Полный список класса 8-З (31 ученик)
 const students = [
-    "Абдраманов Нурислам",
-    "Акунжанова Арина",
-    "Акунов Азирет Али",
-    "Ахмедова Элиф",
-    "Байдаалыев Али",
-    "Востров Константин",
-    "Джаныбеков Баяман",
-    "Жумабекова Фатима",
-    "Замирбекова Тансулуу",
-    "Казыбеков Дамир",
-    "Каныбекова Акинай",
-    "Кирка Илья",
-    "Колмурсаева Аруужан",
-    "Конушбаева Мээрим",
-    "Кочконбаев Байдөөлөт",
-    "Кушалиев Азирет",
-    "Кыдыралиев Тариэл",
-    "Кылычбекова Мүрөк",
-    "Майдинов Анвар",
-    "Машаев Айдар",
-    "Момуева Айдинай",
-    "Мустафаев Амир",
-    "Осмонова Афелия",
-    "Осмонов Адахан",
-    "Петров Руслан",
-    "Рафатов Нурислам",
-    "Рафатов Ясин",
-    "Раханов Байхан",
-    "Самыйбеков Байэл",
-    "Сүйүндүкова Батыйна",
-    "Тыныбеков Алиаскар",
-    "Шааболотова Амина",
-    "Шаршенбекова Сабина",
-    "Эркинова Раяна",
-    "Эрмеков Жусуп"
+    "Абдрахман Нурсултан",
+    "Абдурасулов Нурислам",
+    "Акуналы уулу Азиз",
+    "Акунов Азирет-Али",
+    "Акунов Алихан",
+    "Акылбеков Арсен",
+    "Алмазбеков Али",
+    "Асадулин Нурсултан",
+    "Аширалиева Рабия",
+    "Базарбаева Асыл",
+    "Байболотов Али",
+    "Бектен Константин",
+    "Бектуров Алихан",
+    "Бектурова Аделя",
+    "Догдурбаев Сабыр",
+    "Доолотбеков Соорун",
+    "Дюшебаева Салия",
+    "Жамалбеков Бактияр",
+    "Жумабеков Нурсултан",
+    "Жумабеков Тынчтык",
+    "Жуманалиева Азиза",
+    "Замирбеков Актилек",
+    "Замирбекова Тамара",
+    "Ибраимова Айбийке",
+    "Караев Ильяз",
+    "Касенбеков Арсен",
+    "Кенжебаева Айбике",
+    "Кенжебекова Арууке",
+    "Кермалиев Нурэл",
+    "Ким Юлия",
+    "Кочконбаева Арууке",
+    "Кубанычева Тансулуу",
+    "Кудайбергенов Тарэль",
+    "Кудайбергенова Табита",
+    "Осмонов Адахан"
 ];
 
 const totalLessons = 7;
-const datePicker = document.getElementById('datePicker');
-const studentsList = document.getElementById('studentsList');
-const searchInput = document.getElementById('searchInput');
-
 let currentDayData = {};
+let currentFilter = 'all';
 
-if (datePicker && !datePicker.value) {
-    datePicker.value = new Date().toISOString().split('T')[0];
+const datePicker = document.getElementById('datePicker');
+const searchInput = document.getElementById('searchInput');
+const studentsList = document.getElementById('studentsList');
+
+// Выставляем сегодняшнюю дату
+const today = new Date().toISOString().split('T')[0];
+if (datePicker) {
+    datePicker.value = today;
+    datePicker.addEventListener('change', loadData);
 }
 
 function getKey() {
-    return datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+    return datePicker ? datePicker.value : today;
 }
 
-function loadDefaultData() {
-    currentDayData = {};
-    students.forEach(name => {
-        currentDayData[name] = Array(totalLessons).fill('Б');
-    });
-}
-
-// Подписка на изменения Firebase в реальном времени (.on('value'))
-function listenToFirebase() {
-    if (!db) return;
+// Загрузка данных
+function loadData() {
     const key = getKey();
-
-    db.ref(`attendance/${key}`).on('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-            currentDayData = val;
-        } else {
-            loadDefaultData();
+    
+    // Сначала грузим из localStorage для мгновенного отображения
+    const local = localStorage.getItem(`attendance_${key}`);
+    if (local) {
+        try {
+            currentDayData = JSON.parse(local);
+        } catch(e) {}
+    }
+    
+    // Если пусто, заполняем дефолтом 'Б'
+    students.forEach(name => {
+        if (!currentDayData[name]) {
+            currentDayData[name] = Array(totalLessons).fill('Б');
         }
-        render();
     });
+    render();
+
+    // Затем подтягиваем из Firebase
+    if (db) {
+        db.ref(`attendance/${key}`).once('value').then(snapshot => {
+            const val = snapshot.val();
+            if (val) {
+                students.forEach(name => {
+                    if (val[name] && Array.isArray(val[name])) {
+                        currentDayData[name] = val[name];
+                    }
+                });
+                saveLocal();
+                render();
+            } else {
+                db.ref(`attendance/${key}`).set(currentDayData);
+            }
+        }).catch(() => {});
+    }
 }
 
+function saveLocal() {
+    localStorage.setItem(`attendance_${getKey()}`, JSON.stringify(currentDayData));
+}
+
+// Отрисовка списка карточек
 function render() {
     if (!studentsList) return;
     studentsList.innerHTML = '';
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    if (isParentView) {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    }
-
-    students.forEach((name, studentIndex) => {
+    students.forEach(name => {
         if (query && !name.toLowerCase().includes(query)) return;
 
         const userLessons = currentDayData[name] || Array(totalLessons).fill('Б');
         const absentCount = userLessons.filter(s => s !== 'Б').length;
 
+        // Фильтры
+        if (currentFilter === 'absent' && !userLessons.includes('Н/Б')) return;
+        if (currentFilter === 'reason' && !userLessons.includes('П')) return;
+        if (currentFilter === 'late' && !userLessons.includes('О')) return;
+
         const card = document.createElement('div');
         card.className = 'student-card';
 
         let lessonsHTML = '';
-        userLessons.forEach((status, lessonIndex) => {
+        userLessons.forEach((status, i) => {
             let cls = 'btn-present';
             if (status === 'Н/Б') cls = 'btn-absent';
             if (status === 'П') cls = 'btn-reason';
             if (status === 'О') cls = 'btn-late';
 
-            const disabledAttr = isParentView ? 'disabled style="opacity: 0.8; cursor: default;"' : '';
-
             lessonsHTML += `
                 <div class="lesson-box">
-                    <span class="lesson-title">${lessonIndex + 1} ур</span>
-                    <button class="btn-status ${cls}" ${disabledAttr} onclick="toggleStatus(${studentIndex}, ${lessonIndex})">${status}</button>
+                    <span class="lesson-title">${i + 1} ур</span>
+                    <button class="btn-status ${cls}" onclick="toggleStatus('${name}', ${i})">${status}</button>
                 </div>
             `;
         });
@@ -149,40 +166,45 @@ function render() {
     });
 }
 
-function toggleStatus(studentIndex, lessonIndex) {
-    if (isParentView) return;
-
-    const studentName = students[studentIndex];
-    if (!studentName) return;
-
+// Переключение статуса кликом
+function toggleStatus(name, index) {
     const cycle = ['Б', 'Н/Б', 'П', 'О'];
-    if (!currentDayData[studentName]) currentDayData[studentName] = Array(totalLessons).fill('Б');
-
-    const current = currentDayData[studentName][lessonIndex] || 'Б';
+    const current = currentDayData[name][index] || 'Б';
     const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
 
-    currentDayData[studentName][lessonIndex] = next;
+    currentDayData[name][index] = next;
+    saveLocal();
+    render();
 
-    // Сохраняем прямо в Firebase
     if (db) {
-        db.ref(`attendance/${getKey()}/${studentName}`).set(currentDayData[studentName]);
-    } else {
-        render();
+        db.ref(`attendance/${getKey()}/${name}`).set(currentDayData[name]).catch(() => {});
     }
 }
 
+// Кнопка "Все есть"
 function markAllPresent() {
-    if (isParentView) return;
-    loadDefaultData();
+    students.forEach(name => {
+        currentDayData[name] = Array(totalLessons).fill('Б');
+    });
+    saveLocal();
+    render();
+
     if (db) {
-        db.ref(`attendance/${getKey()}`).set(currentDayData);
-    } else {
-        render();
+        db.ref(`attendance/${getKey()}`).set(currentDayData).catch(() => {});
     }
 }
 
+// Фильтры чипсов
+function setFilter(type, el) {
+    currentFilter = type;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    render();
+}
+
+// Отчет WhatsApp
 function copyWhatsAppReport() {
-    let text = `📋 Отчет по посещаемости 8-З на ${getKey()}:\n\n`;
+    let text = `📅 Отчет по посещаемости на ${getKey()}:\n\n`;
     let hasAbsent = false;
 
     students.forEach(name => {
@@ -201,23 +223,53 @@ function copyWhatsAppReport() {
     });
 }
 
+// Статистика
+function openStats() {
+    document.getElementById('statsModal').classList.add('active');
+    const statsBody = document.getElementById('statsBody');
+    statsBody.innerHTML = 'Загрузка...';
+
+    const currentMonth = getKey().slice(0, 7);
+    const stats = {};
+    students.forEach(name => stats[name] = 0);
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k.startsWith(`attendance_${currentMonth}`)) {
+            try {
+                const dayData = JSON.parse(localStorage.getItem(k));
+                students.forEach(name => {
+                    if (dayData[name]) {
+                        stats[name] += dayData[name].filter(s => s !== 'Б').length;
+                    }
+                });
+            } catch(e) {}
+        }
+    }
+
+    let html = `<p style="font-weight: bold; margin-bottom: 8px;">Месяц: ${currentMonth}</p>`;
+    students.forEach(name => {
+        html += `<div class="stat-item"><span>${name}</span> <b>${stats[name]} проп.</b></div>`;
+    });
+    statsBody.innerHTML = html;
+}
+
+function closeStats() {
+    document.getElementById('statsModal').classList.remove('active');
+}
+
+// Переключение темы
 function toggleTheme() {
-    const body = document.body;
+    const htmlEl = document.documentElement;
     const btn = document.getElementById('themeBtn');
-    if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
+    if (htmlEl.getAttribute('data-theme') === 'dark') {
+        htmlEl.removeAttribute('data-theme');
         btn.textContent = '🌙';
     } else {
-        body.setAttribute('data-theme', 'dark');
+        htmlEl.setAttribute('data-theme', 'dark');
         btn.textContent = '☀️';
     }
 }
 
-if (datePicker) {
-    datePicker.addEventListener('change', () => {
-        listenToFirebase();
-    });
-}
-
-loadDefaultData();
-listenToFirebase();
+// Старт при загрузке
+loadData();
