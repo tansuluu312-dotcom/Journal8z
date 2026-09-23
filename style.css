@@ -1,138 +1,280 @@
 :root {
-    --bg-color: #f4f6f8;
-    --card-bg: #ffffff;
-    --text-primary: #1e293b;
+    --bg-gradient: linear-gradient(135deg, #f0f4fd 0%, #e5ecfb 100%);
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-border: rgba(255, 255, 255, 0.9);
+    --text-primary: #0f172a;
     --text-secondary: #64748b;
-    --accent-color: #2563eb;
-    --accent-hover: #1d4ed8;
     
-    --present-bg: #e6f4ea;
-    --present-text: #137333;
-    --absent-bg: #fce8e6;
-    --absent-text: #c5221f;
+    --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    --accent-shadow: rgba(59, 130, 246, 0.35);
     
-    --border-radius: 16px;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --present-bg: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    --present-text: #15803d;
+    --present-border: rgba(34, 197, 94, 0.3);
+    
+    --absent-bg: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    --absent-text: #dc2626;
+    --absent-border: rgba(239, 68, 68, 0.3);
+    
+    --reason-bg: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    --reason-text: #b45309;
+    --reason-border: rgba(245, 158, 11, 0.3);
+    
+    --glass-shadow: 0 8px 24px rgba(31, 38, 135, 0.08);
+    --radius-lg: 18px;
+    --radius-md: 12px;
 }
 
 [data-theme="dark"] {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
+    --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+    --card-bg: rgba(30, 41, 59, 0.85);
+    --card-border: rgba(255, 255, 255, 0.1);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     
-    --present-bg: rgba(19, 115, 51, 0.25);
+    --present-bg: linear-gradient(135deg, rgba(20, 83, 45, 0.6) 0%, rgba(22, 101, 52, 0.6) 100%);
     --present-text: #4ade80;
-    --absent-bg: rgba(197, 34, 31, 0.25);
+    
+    --absent-bg: linear-gradient(135deg, rgba(127, 29, 29, 0.6) 0%, rgba(153, 27, 27, 0.6) 100%);
     --absent-text: #f87171;
+    
+    --reason-bg: linear-gradient(135deg, rgba(120, 53, 15, 0.6) 0%, rgba(146, 64, 14, 0.6) 100%);
+    --reason-text: #fbbf24;
+    
+    --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    transition: background-color 0.2s, color 0.2s;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    transition: background 0.25s, color 0.25s, transform 0.15s, box-shadow 0.15s;
 }
 
 body {
-    background-color: var(--bg-color);
+    background: var(--bg-gradient);
+    background-attachment: fixed;
     color: var(--text-primary);
-    padding: 16px;
-    max-width: 600px;
+    padding: 12px;
+    max-width: 480px;
     margin: 0 auto;
+    min-height: 100vh;
 }
 
-.header {
+/* Обычная шапка, прокручивается вместе со страницей */
+.glass-header {
     background: var(--card-bg);
-    padding: 18px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    margin-bottom: 14px;
+    position: relative;
 }
 
 .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    background: var(--accent-gradient);
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px var(--accent-shadow);
 }
 
 .header h1 {
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .theme-toggle {
-    background: transparent;
-    border: none;
-    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--card-border);
+    font-size: 1.1rem;
     cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 10px;
 }
 
 .controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
-input[type="date"] {
+.date-input-wrapper {
     flex: 1;
-    padding: 10px;
-    border: 1px solid var(--text-secondary);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--text-primary);
-    font-size: 0.9rem;
 }
+
+input[type="date"], .search-input-wrapper input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    outline: none;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+.search-input-wrapper input {
+    padding-left: 32px;
+}
+
+.quick-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.tag-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 16px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tag-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px var(--accent-shadow);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-action {
+    flex: 1;
+    border: none;
+    padding: 9px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-copy { background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); }
+.btn-excel { background: linear-gradient(135deg, #107c41 0%, #084c27 100%); }
 
 .btn-main {
-    background: var(--accent-color);
+    background: var(--accent-gradient);
     color: white;
     border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.85rem;
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.8rem;
     cursor: pointer;
+    box-shadow: 0 3px 10px var(--accent-shadow);
+    white-space: nowrap;
 }
 
-.btn-main:active {
-    background: var(--accent-hover);
-    transform: scale(0.98);
+.btn-action:active, .btn-main:active, .tag-btn:active {
+    transform: scale(0.96);
+}
+
+/* Список карточек учеников */
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .student-card {
     background: var(--card-bg);
-    padding: 16px;
-    border-radius: var(--border-radius);
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    padding: 14px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
 }
 
 .student-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .student-name {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: -0.2px;
 }
 
-.absent-count {
-    font-size: 0.75rem;
+.absent-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
     color: var(--text-secondary);
-    background: var(--bg-color);
-    padding: 4px 8px;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 3px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
 }
 
+/* Сетка из 7 уроков */
 .lessons-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 
 .lesson-box {
@@ -142,31 +284,34 @@ input[type="date"] {
 }
 
 .lesson-title {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
+    font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .btn-status {
     width: 100%;
-    height: 40px;
-    border: none;
+    height: 38px;
+    border: 1px solid transparent;
     border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 800;
+    font-size: 0.8rem;
     cursor: pointer;
 }
 
-.btn-status:active {
-    transform: scale(0.95);
-}
+.btn-present { background: var(--present-bg); color: var(--present-text); border-color: var(--present-border); }
+.btn-absent { background: var(--absent-bg); color: var(--absent-text); border-color: var(--absent-border); }
+.btn-reason { background: var(--reason-bg); color: var(--reason-text); border-color: var(--reason-border); }
 
-.btn-present {
-    background-color: var(--present-bg);
-    color: var(--present-text);
-}
-
-.btn-absent {
-    background-color: var(--absent-bg);
-    color: var(--absent-text);
+.readonly-badge {
+    background: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    padding: 6px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 8px;
 }
