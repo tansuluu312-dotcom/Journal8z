@@ -170,14 +170,16 @@ function toggleStatus(name, index) {
     const current = currentDayData[name][index] || 'Б';
     const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
 
-    currentDayData[name][index] = next;
-    saveLocal();
+   currentDayData[name][index] = next;
+    
+    // Сохраняем в локальную память и в Firebase
+    savelocal();
     render();
-
+    
     if (db) {
-        db.ref(`attendance/${getKey()}/${name}`).set(currentDayData[name]).catch(() => {});
+        db.ref(attendance/${getKey()}).set(currentDayData)
+            .catch((error) => console.error("Ошибка сохранения:", error));
     }
-}
 
 // Кнопка "Все есть"
 function markAllPresent() {
