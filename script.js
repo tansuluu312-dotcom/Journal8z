@@ -120,39 +120,51 @@ function markAllPresent() {
     render();
 }
 
+// Профессиональный экспорт через SheetJS (настоящий XLSX)
 function exportToExcel() {
+    if (typeof XLSX === 'undefined') {
+        alert("Библиотека Excel еще загружается, попробуйте через пару секунд.");
+        return;
+    }
+
     const data = loadData();
     const currentDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-    
-    let tableHTML = `<table border="1"><thead><tr>
-        <th>ФИО Ученика</th>
-        <th>1 урок</th><th>2 урок</th><th>3 урок</th><th>4 урок</th>
-        <th>5 урок</th><th>6 урок</th><th>7 урок</th>
-        <th>Всего пропусков</th>
-    </tr></thead><tbody>`;
+
+    // Формируем массив данных
+    const excelData = [
+        ["ФИО Ученика", "1 урок", "2 урок", "3 урок", "4 урок", "5 урок", "6 урок", "7 урок", "Всего пропусков"]
+    ];
 
     students.forEach(name => {
         const studentLessons = data[name] || Array(totalLessons).fill('Б');
         const absentCount = studentLessons.filter(s => s === 'Н/Б').length;
         
-        tableHTML += `<tr><td>${name}</td>`;
-        studentLessons.forEach(st => {
-            tableHTML += `<td>${st}</td>`;
-        });
-        tableHTML += `<td>${absentCount}</td></tr>`;
+        excelData.push([
+            name,
+            ...studentLessons,
+            absentCount
+        ]);
     });
 
-    tableHTML += `</tbody></table>`;
+    // Создаем книгу и лист Excel
+    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Посещаемость");
 
-    const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Посещаемость_8З_${currentDate}.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Скачиваем бинарный файл .xlsx
+    XLSX.writeFile(workbook, `Посещаемость_8З_${currentDate}.xlsx`);
+}
+
+function toggleTheme() {
+    const body = document.body;
+    const btn = document.getElementById('themeBtn');
+    if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        btn.textContent = '🌙';
+    } else {
+        body.setAttribute('data-theme', 'dark');
+        btn.textContent = '☀️';
+    }
 }
 
 if (datePicker) {
