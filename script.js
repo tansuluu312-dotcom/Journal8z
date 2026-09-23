@@ -1,25 +1,28 @@
-// 1. Конфигурация Firebase
+// 1. Конфигурация Firebase с твоими реальными ключами
 const firebaseConfig = {
-    apiKey: "AIzaSyCRSsM...путь_к_твоим_ключам",
+    apiKey: "AIzaSyCRSsm0to4ZY6Y9nyWEA8D0L6zcuDSbAPs",
     authDomain: "journal-8z.firebaseapp.com",
     databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "journal-8z",
-    storageBucket: "journal-8z.appspot.com",
+    storageBucket: "journal-8z.firebasestorage.app",
     messagingSenderId: "3821431182",
-    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf"
+    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf",
+    measurementId: "G-65KDG0ZEMN"
 };
 
 let db = null;
 try {
-    if (typeof firebase !== 'undefined' && firebase.initializeApp) {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         db = firebase.database();
     }
 } catch (e) {
     console.warn("Firebase оффлайн режим", e);
 }
 
-// 2. Полный список класса 8-З (31 ученик)
+// 2. Полный список класса 8-З
 const students = [
     "Абдрахман Нурсултан",
     "Абдурасулов Нурислам",
@@ -81,7 +84,6 @@ function getKey() {
 function loadData() {
     const key = getKey();
     
-    // Сначала грузим из localStorage для мгновенного отображения
     const local = localStorage.getItem(`attendance_${key}`);
     if (local) {
         try {
@@ -89,7 +91,6 @@ function loadData() {
         } catch(e) {}
     }
     
-    // Если пусто, заполняем дефолтом 'Б'
     students.forEach(name => {
         if (!currentDayData[name]) {
             currentDayData[name] = Array(totalLessons).fill('Б');
@@ -97,7 +98,6 @@ function loadData() {
     });
     render();
 
-    // Затем подтягиваем из Firebase
     if (db) {
         db.ref(`attendance/${key}`).once('value').then(snapshot => {
             const val = snapshot.val();
@@ -132,7 +132,6 @@ function render() {
         const userLessons = currentDayData[name] || Array(totalLessons).fill('Б');
         const absentCount = userLessons.filter(s => s !== 'Б').length;
 
-        // Фильтры
         if (currentFilter === 'absent' && !userLessons.includes('Н/Б')) return;
         if (currentFilter === 'reason' && !userLessons.includes('П')) return;
         if (currentFilter === 'late' && !userLessons.includes('О')) return;
@@ -194,7 +193,7 @@ function markAllPresent() {
     }
 }
 
-// Фильтры чипсов
+// Фильтры
 function setFilter(type, el) {
     currentFilter = type;
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -271,5 +270,5 @@ function toggleTheme() {
     }
 }
 
-// Старт при загрузке
+// Запуск при старте
 loadData();
