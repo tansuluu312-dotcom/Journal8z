@@ -1,13 +1,16 @@
-// Замени данные ниже на свои реальные ключи из Firebase Console
-const firebaseConfig = {
-    apiKey: "ТВОЙ_API_KEY",
-    authDomain: "ТВОЙ_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://ТВОЙ_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "ТВОЙ_PROJECT_ID",
-    storageBucket: "ТВОЙ_PROJECT_ID.appspot.com",
-    messagingSenderId: "ТВОЙ_SENDER_ID",
-    appId: "ТВОЙ_APP_ID"
-};
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRSsm0to4ZY6Y9nyWEA8D0L6zcuDSbAPs",
+    authDomain: "journal-8z.firebaseapp.com",
+    databaseURL: "https://journal-8z-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "journal-8z",
+    storageBucket: "journal-8z.firebasestorage.app",
+    messagingSenderId: "3821431182",
+    appId: "1:3821431182:web:ea8a16b6533293b2f41cdf",
+    measurementId: "G-65KDG0ZEMN"
+  };
+
+
 
 let db = null;
 try {
