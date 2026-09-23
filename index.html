@@ -3,71 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Э-Күндөлүк | Журнал 8З</title>
-    <link rel="stylesheet" href="style.css?v=200">
+    <title>Э-Күндөлүк (Класс 8-З)</title>
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
-    <div class="app-card">
-        <!-- Шапка -->
-        <div class="header">
-            <div class="logo-title">
-                <div class="badge">8З</div>
-                <div>
+    <div class="header">
+        <div class="top-bar">
+            <div class="title-container">
+                <div class="badge-8z">8З</div>
+                <div class="title-text">
                     <h1>Э-Күндөлүк</h1>
-                    <span class="subtitle">Учет посещаемости</span>
+                    <p>Учет посещаемости</p>
                 </div>
             </div>
             <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
 
-        <!-- Выбор даты и Кнопка Все есть -->
         <div class="date-row">
             <input type="date" id="datePicker">
-            <button class="btn-primary" onclick="markAllPresent()">✨ Все есть</button>
+            <button class="btn-all-present" id="btnAllPresent" onclick="markAllPresent()">✨ Все есть</button>
         </div>
 
-        <!-- Поиск -->
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Поиск ученика..." oninput="render()">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Поиск ученика..." oninput="render()">
         </div>
 
-        <!-- Фильтры -->
-        <div class="filter-chips">
+        <div class="chips-row">
             <button class="chip active" onclick="setFilter('all', this)">Все</button>
-            <button class="chip" onclick="setFilter('absent', this)">🩸 Только Н/Б</button>
+            <button class="chip" onclick="setFilter('absent', this)">🔥 Только Н/Б</button>
             <button class="chip" onclick="setFilter('reason', this)">📑 Больничный (П)</button>
+            <button class="chip" onclick="setFilter('late', this)">⏰ Опоздал (О)</button>
         </div>
 
-        <!-- Действия: WhatsApp и Статистика -->
-        <div class="actions-grid">
-            <button class="btn-action btn-whatsapp" onclick="copyWhatsAppReport()">
-                📋 WhatsApp
-            </button>
-            <button class="btn-action btn-stats" onclick="openStats()">
-                📊 Статистика за месяц
-            </button>
+        <div class="actions-row">
+            <button class="btn-action btn-whatsapp" onclick="copyWhatsAppReport()">📊 WhatsApp</button>
+            <button class="btn-action btn-stats" onclick="openStats()">📊 Статистика</button>
         </div>
     </div>
 
-    <!-- Список учеников -->
     <div id="studentsList"></div>
 
-    <!-- Модальное окно статистики -->
+    <!-- Модальное окно для статистики -->
     <div class="modal" id="statsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📊 Статистика за месяц</h2>
-                <button class="modal-close" onclick="closeStats()">&times;</button>
+                <h3>📊 Статистика за месяц</h3>
+                <button onclick="closeStats()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-primary);">&times;</button>
             </div>
             <div id="statsBody"></div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    
-    <script src="script.js"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
