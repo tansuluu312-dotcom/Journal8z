@@ -64,6 +64,12 @@ const totalLessons = 7;
 let currentDayData = {};
 let currentFilter = 'all';
 
+// Режим "только просмотр": активен, если в ссылке есть ?mode=view
+function isViewMode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('mode') === 'view';
+}
+
 const datePicker = document.getElementById('datePicker');
 const searchInput = document.getElementById('searchInput');
 const studentsList = document.getElementById('studentsList');
@@ -166,6 +172,8 @@ function render() {
 
 // Переключение статуса кликом
 function toggleStatus(name, index) {
+    if (isViewMode()) return;
+
     const cycle = ['Б', 'Н/Б', 'П', 'О'];
     const current = currentDayData[name][index] || 'Б';
     const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
@@ -181,6 +189,8 @@ function toggleStatus(name, index) {
 
 // Кнопка "Все есть"
 function markAllPresent() {
+    if (isViewMode()) return;
+
     students.forEach(name => {
         currentDayData[name] = Array(totalLessons).fill('Б');
     });
