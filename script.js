@@ -88,7 +88,11 @@ function getKey() {
 // Загрузка данных
 function loadData() {
     const key = getKey();
-    
+
+    // Сбрасываем данные перед загрузкой новой даты,
+    // чтобы отметки с другого дня не переносились сюда
+    currentDayData = {};
+
     const local = localStorage.getItem(`attendance_${key}`);
     if (local) {
         try {
